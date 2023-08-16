@@ -1,0 +1,22 @@
+descriptor-schema-version: "2.10"
+
+info:
+ name: Hello_World
+ description: "Hello World Flask Application"
+ version: "1.0"
+
+app:
+ cpuarch: "x86_64"
+ type: docker
+ resources:
+   profile: c1.tiny
+   network:     
+     - 
+       interface-name: eth0
+       ports:
+         tcp:
+           - 5000
+
+ startup:
+   rootfs: rootfs.tar
+   target: ["python3 app.py"]
