@@ -1,4 +1,4 @@
-# Application Hosting on Cisco Devices Lab Guides
+# Introduction to Infrastructure as Code using Terrraform
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ If you want to execute those labs on your workstation you need to have following
 
 - Basic command-line skills: Docker is primarily a command-line tool, so you should be familiar with basic command-line skills to navigate and work with your system's terminal or command prompt.
 
-Labs can also be done without installing anything on local machine using https://developer.cisco.com sandboxes and other online resources.
+Labs can also be done without installing anything on local machine using https://dcloud.cisco.com and `Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1`.
 
 
 <br></br>
@@ -27,63 +27,72 @@ Labs can also be done without installing anything on local machine using https:/
 
 - [Lab 3 - Building an IOX Application with Docker](labs/lab3/README.md)
 
-- [Lab 4 - Troubleshoot Cisco IOX](labs/lab4/README.md)
+- [Lab 4 - Build CICD pipeline with Terraform](labs/lab4/README.md)
 
 <br></br>
 
-## Reserve an IOx v1.15 Sandbox
+## Reserve an DCLOUD session:
 
-To initially reserve an IOx v1.15 CAF instance, follow the next steps.
+To reserve an `Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1`, follow below steps:
 
-1. Login to DevNet Sandbox Page
+1. Login to Cisco DCLOUD website
 
-In the browser, please navigate to DevNet: https://developer.cisco.com/
+In the browser, please navigate to DevNet: https://dcloud.cisco.com/ and click `Log In` button:
 
-- Login with one of the available social logins.
-- If you have not yet created a DevNet login, click "SIGN UP FREE" and follow the instructions.
+![dcloud_1](images/dcloud_1.png)
 
-Once logged in, click on Learn -> Sandboxes
+Login with your cisco.com account. If you don't have cisco.com account click `Sing up`
 
-![sandbox_1](images/sandbox_1.png)
+![dcloud_2](images/dcloud_2.png)
 
-Then click on Sandbox Catalog
+Create new account and click `Register`
 
-![sandbox_2](images/sandbox_2.png)
+![dcloud_3](images/dcloud_3.png)
 
-Take a look at the catalog and the different usability options available. For easy access use features like:
+2. Find and schedule Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1 session
 
-- Search by keyword.
-- Filter by the availability.
-- Browse by Category.
-- Check your reservations.
+Paste `Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1` in Search field and click magnifying glass icon:
 
-Find IOS XE on CSR Latest Code with ZTP functionality and click RESERVE:
+![dcloud_4](images/dcloud_4.png)
 
-![sandbox_3](images/sandbox_3.png)
+You should see 1 result:
 
-Next click on the "Reserve" button to reserve a lab:
+![dcloud_5](images/dcloud_5.png)
 
-- Let's leave the default values in place and click Reserve button, you can change default schedule to more than 8 hours, maximum duration is 1 week.
+Click `Schedule` button and choose Schedule a Single Session and choose start and end date and click `Next`:
 
-![sandbox_4](images/sandbox_4.png)
+![dcloud_6](images/dcloud_6.png)
 
-- 2 emails will be sent to you with reservation confirmation and lab access details. You can watch for status updates.
+Choose Primary Use to help dcloud prioritize future enhancements and click Schedule:
 
-![sandbox_4](images/sandbox_5.png)
+![dcloud_7](images/dcloud_7.png)
 
-In both mails you will find information how to install Cisco Anyconnect VPN Client Software which is required to access devices in reserved sandbox:
+Once you schedule your session you should receive following mail:
 
-- [Download the Cisco AnyConnect VPN Client Software](https://developer.cisco.com/site/devnet/sandbox/anyconnect/)
-- [Installation Guide for the Cisco AnyConnect VPN Client Software](https://devnetsandbox.cisco.com/Docs/VPN_Access/AnyConnect_Installation_Guide.pdf)
+![dcloud_8](images/dcloud_8.png)
 
-In the second mail you will also find VPN connection information which you have to use to establish VPN connection using Cisco AnyConnect VPN Client:
+3. Access Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1 session
 
-Example:
+Navigate to main page of https://dcloud.cisco.com and click `My Hub` on the top right:
 
-```
-Lab Network Address: devnetsandbox-usw1-reservation.cisco.com:20230
-Username: kuba.mazu
-Password: JJUPMYPQ
-```
+![dcloud_9](images/dcloud_9.png)
 
-Once you connect to VPN you should be able to reach Lab devices from your workstation using ssh client and web browser.
+You should see your scheduled session under Sessions. Click `View` button to enter your session:
+
+![dcloud_10](images/dcloud_10.png)
+
+### Network Topology:
+
+There is a workstation and a CML instance that host the tooling and virtual machines for the use cases. The Windows Workstation can be accessed with RDP. There is an Ubuntu WSL VM within the Windows VM that hosts services including TFTP.
+
+The CML topology has several Cisco Catalyst 9000 Virtual Switches, Ubuntu Linux and Alpine Linux clients:
+
+![dcloud_11](images/dcloud_11.png)
+
+To access Windows Workstation Click on workstation icon, expand Remote Access and click `Web RDP` button:
+
+![dcloud_12](images/dcloud_12.png)
+
+New TAB should open and you should see Windows Desktop
+
+![dcloud_13](images/dcloud_13.png)
