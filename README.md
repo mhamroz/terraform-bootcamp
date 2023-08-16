@@ -4,13 +4,13 @@
 
 If you want to execute those labs on your workstation you need to have following prerequisites:
 
-- Access to the internet: Docker requires internet access to download container images and Docker components, so you will need a reliable internet connection.
+- Access to the internet
 
 - `Docker` installed on your local machine: You will need to install Docker on your local machine. Docker provides installation instructions for various operating systems on their website. [Get Docker](https://docs.docker.com/get-docker/)
 
 - `Code editor`: You will need a code editor to write and edit Dockerfiles and other code. You can choose any code editor of your preference like Visual Studio Code, Sublime Text, Atom or Notepad++, etc. [Visual Studio Code Download](https://code.visualstudio.com/)
 
-- `ioxclient` downloaded: You will need to download [ioxclient](https://developer.cisco.com/docs/iox/#!iox-resource-downloads/downloads). "ioxclient" is a command line tool provided as part of Cisco IOx SDK. This utility is primarily meant for assisting application development for Cisco's IOx platforms.
+- `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
 
 - Basic command-line skills: Docker is primarily a command-line tool, so you should be familiar with basic command-line skills to navigate and work with your system's terminal or command prompt.
 
