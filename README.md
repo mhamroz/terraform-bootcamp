@@ -12,7 +12,7 @@ If you want to execute those labs on your workstation you need to have following
 
 - `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
 
-- Basic command-line skills: Docker is primarily a command-line tool, so you should be familiar with basic command-line skills to navigate and work with your system's terminal or command prompt.
+- Basic command-line skills: Terraform is primarily a command-line tool, so you should be familiar with basic command-line skills to navigate and work with your system's terminal or command prompt.
 
 Labs can also be done without installing anything on local machine using https://dcloud.cisco.com and `Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1`.
 
@@ -21,13 +21,11 @@ Labs can also be done without installing anything on local machine using https:/
 
 ## LABS
 
-- [Lab 1 - Guest Shell, Python scripting on Box](labs/lab1/README.md)
+- [LAB 1 - Guest Shell, Python scripting on Box](labs/lab1/README.md)
 
-- [Lab 2 - Introduction to Docker](labs/lab2/README.md)
+- [LAB 2 - BGP EVPN on IOS-XE Cat9k using Terraform](labs/lab2/README.md)
 
-- [Lab 3 - Building an IOX Application with Docker](labs/lab3/README.md)
-
-- [Lab 4 - Build CICD pipeline with Terraform](labs/lab4/README.md)
+- [LAB 3 - Build CICD pipeline with Terraform](labs/lab3/README.md)
 
 <br></br>
 

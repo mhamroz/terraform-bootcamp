@@ -1,4 +1,42 @@
-# LAB 2 - Introduction to Docker
+# LAB 2 - BGP EVPN on IOS-XE Cat9k using Terraform
+
+## Lab Overview
+
+This lab focuses on configuring BGP EVPN VXLAN on Cisco Catalyst 9000 Series Switches running Cisco IOS XE software using Terraform. 
+
+### BGP EVPN VXLAN
+
+BGP EVPN VXLAN is a campus network solution for Cisco Catalyst 9000 Series Switches running Cisco IOS XE software. It is designed to provide L2/L3 network services with greater flexibility, mobility, and scalability and also address the well-known classic networking protocols challenges.
+
+You can find additional information and the fundamental terminology necessary to understand BGP EVPN VXLAN through the following links:
+- [BGP EVPN VXLAN Overview](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/bgp_evpn_vxlan_overview.html)
+- [Why Transition to BGP EVPN VXLAN in Enterprise Campus](https://blogs.cisco.com/networking/why-transition-to-bgp-evpn-vxlan-in-enterprise-campus)
+
+<br>
+
+This lab will construct [Layer 3 VNI](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_3_overlay_network.html) and [Layer 2 VNI](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_2_overlay_network.html)
+
+
+<br>
+
+## Pre-requisites
+
+- Use an IDE of your choice. This tutorial will assume Visual Studio Code
+
+- Git installed
+
+- Docker installed
+
+- Access to Catalyst 9000 series switches (2x Leafs, 1xSpine)
+
+- Basic understanding of Terraform
+
+## Time Estimates
+
+45 minutes
+
+<br></br>
+
 
 ## Goal
 

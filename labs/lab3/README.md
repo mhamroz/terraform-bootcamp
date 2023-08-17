@@ -1,989 +1,313 @@
-# LAB 3 - Building an IOx Application with Docker
-
-## Goal
-
-By the end of this lab, you should be able to build and deploy an IOx application using Docker. By completing this lab you will learn the following skills:
-
-- understand how to create a Docker image of their application
-- configure it to run on the IOx platform
-- deploy it to an IOx-enabled device
-- monitor and review the IOx Application
-
-## Pre-requisites
-
-- Access to a Cisco device that supports the IOx feature, such as the Cisco Catalyst 9000 series switch or Catalyst 8000 series router
-
-- A computer with SSH client software installed
-
-- [ioxclient](https://developer.cisco.com/docs/iox/#!iox-resource-downloads) for your operating system.
-
-
-## Time Estimates
-
-60 minutes
+# LAB 3 - Build CICD pipeline with Terraform
 
 ## Lab Overview
 
-The "Building an IOx Application with Docker" will teach you how to build, package, install, start, stop, and uninstall an IOx application using Docker.
-
-The lab consists of several steps that you need to follow in order to successfully build and deploy an IOx application. First, you will use Docker to build a container for your application. You will then use the ioxclient tool to package the application into a tar file.
-
-Once the container is packaged, you will install it on the router. This involves uploading the package.tar file to the router and using the ioxclient tool to install it. After the container is installed, you will start it to make the application available for use.
-
-To stop the container, you will use the ioxclient tool to issue a stop command. Finally, you will learn how to uninstall the container using the ioxclient tool.
-
-Throughout the lab, you will gain hands-on experience with the various tools and commands used to build and deploy an IOx application. By the end of the session, you should have a good understanding of the process involved in building and deploying a containerized IOx application.
-
-
-To complete this lab you can use any device which supports IOX or use sandbox from developer.cisco.com [IOS XE on CSR Latest Code with ZTP functionality](https://devnetsandbox.cisco.com/RM/Diagram/Index/f2e2c0ad-844f-4a73-8085-00b5b28347a1?diagramType=Topology)
-
-
-This lab instruction is using IOS XE on CSR Latest Code with ZTP functionality sandbox:
-
-| Hostname  | IP Address | Username | Password | Connection Type|
-| ---------- | -------- | -------- | -------- | -------- |
-| csr1000v-1 | 10.10.20.48 | developer | C1sco12345 | SSH |
+Multiple solutions are available to implement CI/CD automation for the Terraform IaC workflows. In this lab, we will explore and implement a CI/CD pipeline for Terraform using GitLab. GitLab is like a toolbox that provides remote spots for holding our code (known as repositories), and it also takes care of automatic testing and deployments (CI/CD).
 
 <br>
 
-`IMPORTANT`
+## Pre-requisites
 
-Before you continue with this lab, make sure that lab device has iox feature enabled and network settings are configured as per LAB 1 - Guest Shell, Python scripting on Box -> 1. Enabling Guestshell:
+- Use an IDE of your choice. This tutorial will assume Visual Studio Code
 
-  - Network settings for the IOS XE host
-  - NAT configuration
+- Git installed
 
-If you didn't go through LAB_1 simply copy paste following config lines into CSR1000v host:
+- Docker installed
 
-```
-conf t
-iox
-interface VirtualPortGroup0
-ip nat inside
-ip address 192.168.10.1 255.255.255.0
-exit
-interface GigabitEthernet1
-ip nat outside
-exit
-ip access-list extended NAT
-permit ip 192.168.10.0 0.0.0.255 any
-exit
-ip nat inside source list NAT interface GigabitEthernet1 overload
-end
-```
+- Access to ACI Simulator
 
-Output from device:
-```
-csr1000v-1#conf t
-Enter configuration commands, one per line.  End with CNTL/Z.
-csr1000v-1(config)#iox
-csr1000v-1(config)#interface VirtualPortGroup0
-csr1000v-1(config-if)#ip nat inside
-csr1000v-1(config-if)#ip address 192.168.10.1 255.255.255.0
-csr1000v-1(config-if)#exit
-csr1000v-1(config)#interface GigabitEthernet1
-csr1000v-1(config-if)#ip nat outside
-csr1000v-1(config-if)#exit
-csr1000v-1(config)#ip access-list extended NAT
-csr1000v-1(config-ext-nacl)#permit ip 192.168.10.0 0.0.0.255 any
-csr1000v-1(config-ext-nacl)#exit
-csr1000v-1(config)#$de source list NAT interface GigabitEthernet1 overload       
-csr1000v-1(config)#end
-```
+## Time Estimates
 
-Wait couple minutes for IOX service (IOXman) to start. You can check it using `show iox` command:
-
-```
-csr1000v-1#show iox
-
-IOx Infrastructure Summary:
----------------------------
-IOx service (CAF) 1.11.0.2     : Running
-IOx service (HA)               : Not Supported 
-IOx service (IOxman)           : Running 
-IOx service (Sec storage)      : Not Supported 
-Libvirtd 1.3.4                 : Running
-```
-
-<br>
-
-## 1. Install ioxclient tool
-
-1. Download ioxclient:
-
-- On your Windows host machine in the dCloud Pod, use the following link to download the installation zip file to any system folder of your choosing: https://pubhub.devnetcloud.com/media/iox/docs/artifacts/ioxclient/ioxclient-v1.7.2.1/ioxclient_1.7.2.1_windows_amd64.zip
-
-- On your Linux host machine in the dCloud Pod, use the following link to download the installation zip file to any system folder of your choosing: https://pubhub.devnetcloud.com/media/iox/docs/artifacts/ioxclient/ioxclient-v1.7.2.1/ioxclient_1.7.2.1_linux_amd64.tar.gz
-
-2. Unpack the ioxclient folder with the command `tar -xzf ioxclient_1.7.2.1_linux_amd64.tar.gz`
-
-3. If you are using Windows, skip to the next step. If you are using Linux, navigate to the unpacked ioxclient folder and set permissions by running `chmod +x ioxclient`
-
-4. Copy the ioxclient binary.
-
-- Windows: ioxclient.exe in C:\Windows\system32
-- Linux: ioxclient in /usr/local/bin
-
-You are now ready to use ioxclient from the command line in either Linux or Windows.
-
-<br>
-
-## 2. Access IOX Local Manager
-Cisco IOx Local Manager is a platform-specific application that is installed on a host system as part of
-the installation of the Cisco IOx framework on that device. It provides a web-based user interface that
-you can use to manage, administer, monitor, and troubleshoot apps on the host system, and to perform a
-variety of related activities.
-
-On some Cisco platforms IOX Local Manager is enabled by default, in our lab you need to enable `ip http / https server` by running following command:
-
-```
-csr1000v-1#conf t
-Enter configuration commands, one per line.  End with CNTL/Z.
-csr1000v-1(config)#ip http server 
-csr1000v-1(config)#ip http secure-server 
-csr1000v-1(config)#ip http authentication local
-```
-
-`COPY-PASTE`
-
-```
-ip http server 
-ip http secure-server 
-ip http authentication local
-```
-
-To access IOX Local Manager simply open web-browser and enter the following address:
-
-`https://ip_address/iox/login` or `http://ip_address/iox/login`
-
-where ip_address is the IP address of the host system on which Cisco IOx Local Manager is installed.
-
-
-IOX Local Manager on CSR1000v device in lab can be accessed as follows:
-
-- CSR1000V:
-  - https://10.10.20.48/iox/login
-  - credentials [developer/C1sco12345]
-
-
-
-![localmanager](images/local_manager1.png)
-
-Local Manager will be used later in this lab to verify status of deployed containers.
-
-There are 2 different processes of deploying container to Cisco device.
-- uploading a Docker image to an IOx device (via IOx Local Manager or CLI)
-- packaging a Docker image using the IOxclient tool
-
-In next tasks we will focus on 2nd process of deploying container using IOxclient tool.
-
-Packaging a Docker image using the IOxclient tool involves creating a Cisco IOx application package that contains the Docker image along with metadata and configuration files required for the application to run on an IOx device. This process is typically done using the IOxclient tool, which automates the creation of the application package. Packaging a Docker image using the IOxclient tool is useful when you need to create a custom IOx application that includes a specific Docker image along with additional IOx-specific configuration files.
-
-Whether you can upload a Docker image directly to an IOx device or need to use the IOxclient tool to package your application can depend on the platform's support for native Docker. If the platform does not support native Docker, then you would need to use the IOxclient tool to package and deploy your application [Platform Support Matrix](https://developer.cisco.com/docs/iox/#!platform-support-matrix/enterprise-platforms)
+45 minutes
 
 <br></br>
 
-## 3. Configure ioxclient tool
+## 1. Install GITLAB with Docker
 
-The first time ioxclient is used, a wizard will be shown asking a few questions based on which ioxclient will configure itself. It will also create a "default" profile that captures connection information with an IOx device. Creating and using additional profiles will be described in further sections.
+Open terminal and pull gitlab-ce image from DockerHub:
 
-To run ioxclient simply type `ioxclient` in your terminal:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient
-Config file not found :  /home/developer/.ioxclientcfg.yaml
-Creating one time configuration..
-Your / your organization's name : 
-```
-
-You will be prompt for information about device you want to connect to.
-
-Note: The below configuration values are platform specific. Please consult the target platform's ioxclient setup section for more details provided in section [Platforms](https://developer.cisco.com/docs/iox/#!platform-support-matrix).
-
+`docker pull gitlab/gitlab-ee:latest`
 
 ```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient
-Config file not found :  /Users/kmazurki/.ioxclientcfg.yaml
-Creating one time configuration..
-Your / your organization's name : cisco
-Your / your organization's URL : www.cisco.com
-Your IOx platform's IP address[127.0.0.1] : 10.10.20.48
-Your IOx platform's port number[8443] : 443
-Authorized user name[root] : developer
-Password for developer : 
-Local repository path on IOx platform[/software/downloads]: 
-Connection Timeout Millisecond [1000]: 
-URL Scheme (http/https) [https]: 
-API Prefix[/iox/api/v2/hosting/]: 
-Your IOx platform's SSH Port[2222]: 22
-Your RSA key, for signing packages, in PEM format[]: 
-Your x.509 certificate in PEM format[]: 
-Secure client authentication no|yes [no]: 
-Client authentication x.509 certificate in PEM format[]: 
-Client authentication private key in PEM format[]: 
-Activating Profile  default
-Saving current configuration
+C:\Users\Administrator\Desktop>docker pull gitlab/gitlab-ce:latest
 ```
 
-- You can choose any organization's name and URL you want
-- IOx platform's IP address is ip address of IOX capable device where you want to deploy containers
-- IOx platform's port number by default is 8443, but it can depend on platform (basically its port on which Local Manager is running) -> change to 443
-- Authorized user name and Password are credentials used to access devices
-- IOx platform's SSH Port default 2222 -> change to 22
-
-
-After command run for the first time you should see that default profile was activated:
+Image will take 2-3 mins to download. Once downloaded, check if image was downloaded successfuly using `docker images` command:
 
 ```
-Activating Profile  default
+C:\Users\Administrator\Desktop>docker images
+REPOSITORY               TAG       IMAGE ID       CREATED         SIZE
+gitlab/gitlab-ce         latest    c5dc32379073   4 days ago      3.01GB
+yangsuite-dcloud         latest    f8cbf8617700   7 months ago    3.46GB
+yangsuite                latest    79745a8cf9fd   11 months ago   2.58GB
+tig_mdt                  latest    4922aa6e492d   12 months ago   4.32GB
+portainer/portainer-ce   2.9.3     ad0ecf974589   21 months ago   252MB
 ```
-The tool creates a default profile. Each profile has information about how to connect to a specific Cisco IOx platform.
-
-The profile data is stored in $HOME/.ioxclientcfg.yaml file. Do not attempt to manually edit this file.
-To list profiles you can use following command:
-`ioxclient profiles list`
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles list
-Active Profile :  default
-Profile Name :  default
-	Host IP:  10.10.20.48
-	Host Port:  443
-	Auth Keys:  ZGV2ZWxvcGVyOkMxc2NvMTIzNDU=
-	Auth Token:  53b201b7-eb14-4391-92a1-be7a9b751956
-	Api Prefix:  /iox/api/v2/hosting/
-	URL Scheme:  https
-	RSA Key:  
-	Certificate: 
-	Connection Timeout Millisecond:  1000
-```
-
-If you want to create new profile to interact with ne IOx device you can use command:
-`ioxclient profiles create`
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles create
-Active Profile :  default
-Enter a name for this profile : sandbox
-Your IOx platform's IP address[127.0.0.1] : 10.10.20.48
-Your IOx platform's port number[8443] : 443
-Authorized user name[root] : developer
-Password for developer : 
-Local repository path on IOx platform[/software/downloads]: 
-Connection Timeout Millisecond [1000]: 
-URL Scheme (http/https) [https]: 
-API Prefix[/iox/api/v2/hosting/]: 
-Your IOx platform's SSH Port[2222]: 22
-Your RSA key, for signing packages, in PEM format[]: 
-Your x.509 certificate in PEM format[]: 
-Secure client authentication no|yes [no]: 
-Client authentication x.509 certificate in PEM format[]: 
-Client authentication private key in PEM format[]: 
-Activating Profile  sandbox
-Saving current configuration
-```
-
-I used same settings as in default profile, because lab only contains 1x CSR1000v device, but if you have multiple IOX devices you can add them using this command. The only difference from default profile is name of the profile. Newly added progile has name: sandbox.
-
-Let's list profiles `ioxclient profiles list`:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles list
-Active Profile :  sandbox
-Profile Name :  default
-	Host IP:  10.10.20.48
-	Host Port:  443
-	Auth Keys:  ZGV2ZWxvcGVyOkMxc2NvMTIzNDU=
-	Auth Token:  53b201b7-eb14-4391-92a1-be7a9b751956
-	Api Prefix:  /iox/api/v2/hosting/
-	URL Scheme:  https
-	RSA Key:  
-	Certificate: 
-	Connection Timeout Millisecond:  1000
-Profile Name :  sandbox
-	Host IP:  10.10.20.48
-	Host Port:  443
-	Auth Keys:  ZGV2ZWxvcGVyOkMxc2NvMTIzNDU=
-	Auth Token:  
-	Api Prefix:  /iox/api/v2/hosting/
-	URL Scheme:  https
-	RSA Key:  
-	Certificate: 
-	Connection Timeout Millisecond:  1000
-```
-
-We can see that we have two profiles.
-- default
-- <b>sandbox</b> -> Active Profile
-
-Note: When a new profile is created, it automatically gets activated
-
-To activate profile use following command:
-
-`ioxclient profiles activate <name_of_profile>`
-
-Let's activate default profile:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles activate default
-Active Profile :  sandbox
-Activating Profile  default
-Saving current configuration
-```
-
-To delete profile use command:
-
-`ioxclient profiles delete <name_of_profile>`
-
-Since we activated default profile, lets delete sandbox profile:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles delete sandbox
-Active Profile :  default
-Deleting profile  sandbox
-Saving current configuration
-```
-
-Note: Editing an existing profile is not supported. If you would like to reuse an existing profile name, simply delete it and recreate it with desired values.
-
-If you want to remove the existing configuration information stored by he tool you can use `ioxclient profiles reset` command which will prompt for fresh config information:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient profiles reset
-Active Profile :  default
-Your current config details will be lost. Continue (y/N) ? : y
-Current config backed up at  /var/folders/54/bchpg7k13p71_m0pwn00qxwr0000gn/T/ioxclient3594428379
-Config data deleted.
-```
-
-We removed ioxclient configuration and now we need to add this back again using `ioxclient` command, which will create again default profile:
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient
-Config file not found :  /Users/kmazurki/.ioxclientcfg.yaml
-Creating one time configuration..
-Your / your organization's name : cisco
-Your / your organization's URL : www.cisco.com
-Your IOx platform's IP address[127.0.0.1] : 10.10.20.48
-Your IOx platform's port number[8443] : 443
-Authorized user name[root] : developer
-Password for developer : 
-Local repository path on IOx platform[/software/downloads]: 
-Connection Timeout Millisecond [1000]: 
-URL Scheme (http/https) [https]: 
-API Prefix[/iox/api/v2/hosting/]: 
-Your IOx platform's SSH Port[2222]: 22
-Your RSA key, for signing packages, in PEM format[]: 
-Your x.509 certificate in PEM format[]: 
-Secure client authentication no|yes [no]: 
-Client authentication x.509 certificate in PEM format[]: 
-Client authentication private key in PEM format[]: 
-Activating Profile  default
-Saving current configuration
-```
-
-### Get platform information via the ioxclient tool
-
-Now you should be able to run the following command and retrieve platform information directly from the IOx device:
-
-`ioxclient platform info`
-
-```
-kmazurki@KMAZURKI-M-L9FT ~ % ioxclient platform info
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  plt-info
-Oops, access token expired
-Saving current configuration
-Retyring the command
--------------System Info----------------
-{
- "arp_cache": [],
- "corrupted_appids": [],
- "cpu": {
-  "cpu_arch": "x86_64",
-  "family": 6,
-  "frequency": 2194.917,
-  "model": 79,
-  "model_name": "Intel(R) Xeon(R) CPU E5-4669 v4 @ 2.20GHz",
-  "number_cores": 1,
-  "stepping": 0
- },
- "dns_resolver": {
-  "domain": "",
-  "nameservers": [],
-  "search": ""
- },
- "docker_version": "Not Supported",
- "hostname": "csr1000v-1",
- "interfaces": [
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "dpbr_200",
-   "type": "Ethernet"
-  },
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "dpbr_400",
-   "type": "Ethernet"
-  },
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "ieobc_br",
-   "type": "Ethernet"
-  },
-  {
-   "ipv4_address": "127.0.0.1",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.0.3.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e0_cc_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.0.2.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e0_fp_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.0.1.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e0_rp_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.1.3.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e1_cc_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.1.2.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e1_fp_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.1.1.0",
-   "ipv4_netmask": "255.255.255.0",
-   "mtu": 65536,
-   "name": "lo:e1_rp_0",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.2.0.3",
-   "ipv4_netmask": "255.255.0.0",
-   "mtu": 65536,
-   "name": "lo:p_fp_a",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.2.0.1",
-   "ipv4_netmask": "255.255.0.0",
-   "mtu": 65536,
-   "name": "lo:p_rp_a",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.3.0.3",
-   "ipv4_netmask": "255.255.0.0",
-   "mtu": 65536,
-   "name": "lo:s_fp_a",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "10.3.0.1",
-   "ipv4_netmask": "255.255.0.0",
-   "mtu": 65536,
-   "name": "lo:s_rp_a",
-   "type": "Local"
-  },
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "veth0_400",
-   "type": "Ethernet"
-  },
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "veth1_200",
-   "type": "Ethernet"
-  },
-  {
-   "ipv4_address": "",
-   "ipv4_netmask": "",
-   "mtu": 1500,
-   "name": "veth1_400",
-   "type": "Ethernet"
-  }
- ],
- "ipv4_routing": [],
- "libvirt_version": "1003004",
- "memory": {
-  "size": 4073902080,
-  "swap": 0
- },
- "ntp_server": "",
- "product_id": "CSR1000V",
- "server_info": {
-  "address": "127.0.0.1",
-  "port": "8098",
-  "protocol": "HTTP"
- },
- "storage": [],
- "system_id": "SSI130300YK",
- "udi": "CSR1000V:SSI130300YK",
- "uuid": "bd51c76a-11c6-42b3-8901-571da0fd0d95",
- "version": {
-  "caf_version_info": {
-   "branch": "r/1.11.0.0",
-   "build_number": 2,
-   "revision": "40262bfef2fec99ef0d9bad684fd5c7afc3fa5fa"
-  },
-  "caf_version_name": "AMBER",
-  "caf_version_number": "1.11.0.2",
-  "platform_version_info": {},
-  "platform_version_number": "0",
-  "repo": {
-   "repo_version": "1.0",
-   "supported_versions": [
-    "1.0"
-   ]
-  }
- }
-}%    
-```
-
-You should receive JSON output with platform specific information from IOx device specified in default profile
-
-
-<br></br>
-
-## 4. Building an IOx Application with Docker
-
-Before packaging the Docker image for IOx, you must build the image. Building the image requires the Docker tools and running the docker build command. 
-
-Let's use application we prepared in [LAB 2 - Introduction to Docker](../lab2/README.md) (Building a Python Docker image), but with small modifications:
-
-- we will use alpine image
-- application will run on port 5000
-
-One of the best practice while building IOX applications is to use small rootfs. In lab2 we used Ubuntu as rootfs and if we check image size for myapp we can see that the size is almost 500MB, and this is simple "hello world" flask application. Imagine building more complex application with more more data and dependencies. First this containe would take more time to deploy and activate compare to small app and also storage space on Cisco devices is limited, so if you have multiple applications with big size you might run out of storage space.
-
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % docker images | grep myapp
-myapp                                                     latest                                                                       37997bca7efa   14 hours ago    446MB
-kmazurki/myapp                                            latest                                                                       495846253b87   2 days ago      472MB
-```
-
-That's why we are going to modify our rootfs from Ubuntu to Alpine.
-Note. Alpine is a minimal Docker image based on Alpine Linux with a complete package index and only 5 MB in size.
-
-Navigate to `lab3/app` folder. Dockerfile, app.py and requirements.txt files are already there:
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % cd app
-kmazurki@KMAZURKI-M-L9FT app % ls
-Dockerfile  app.py  requirements.txt
-```
-
-Now build your image using `docker build -t ioxapp .` command:
-
-```
-kmazurki@KMAZURKI-M-L9FT app % docker build -t ioxapp .
-[+] Building 18.8s (12/12) FINISHED                                                                                                                      
- => [internal] load build definition from Dockerfile                                                                                                0.0s
- => => transferring dockerfile: 268B                                                                                                                0.0s
- => [internal] load .dockerignore                                                                                                                   0.0s
- => => transferring context: 2B                                                                                                                     0.0s
- => [internal] load metadata for docker.io/library/alpine:latest                                                                                    0.7s
- => CACHED [1/7] FROM docker.io/library/alpine:latest@sha256:124c7d2707904eea7431fffe91522a01e5a861a624ee31d03372cc1d138a3126                       0.0s
- => [internal] load build context                                                                                                                   0.0s
- => => transferring context: 423B                                                                                                                   0.0s
- => [2/7] WORKDIR /app                                                                                                                              0.0s
- => [3/7] COPY requirements.txt .                                                                                                                   0.0s
- => [4/7] RUN apk upgrade                                                                                                                           1.7s
- => [5/7] RUN apk --update add --no-cache python3 py3-pip                                                                                           5.6s
- => [6/7] RUN pip3 install -r requirements.txt                                                                                                      9.7s 
- => [7/7] COPY . .                                                                                                                                  0.5s 
- => exporting to image                                                                                                                              0.3s 
- => => exporting layers                                                                                                                             0.3s 
- => => writing image sha256:508837fb8b28840af3935288e2ee9bd168f22e62a5949e43de4f18560e2f81ab                                                        0.0s 
- => => naming to docker.io/library/ioxapp                                                                                                           0.0s 
-kmazurki@KMAZURKI-M-L9FT app % 
-```
-
-Let's check the size of that image `docker images | grep ioxapp`
-
-```
-kmazurki@KMAZURKI-M-L9FT app % docker images | grep ioxapp
-ioxapp                                                    latest                                                                       87ccaa332260   2 minutes ago    85.5MB
-```
-
-You can see that size of a image is 85MB, and the same container from LAB_2 using Ubuntu rootfs was around 500 MB.
-
-
-Navigate back to lab3 folder:
-
-```
-kmazurki@KMAZURKI-M-L9FT app % cd ..
-kmazurki@KMAZURKI-M-L9FT lab3 % 
-```
-
-
-### Create the IOx Application Files
-
-To package the Docker image for IOx you need to have 2 additional files:
-
-- `package.yaml` - package descriptor file. The contents of this file captures application/service metadata, requirements etc., in a YAML format. It should be named as package.yaml. The specifications of this file is covered [here](https://developer.cisco.com/docs/iox/#!package-descriptor/yaml-template)
-
-- `activation.json` - we will use this file to assign the specific network interface to iox application. It is currently not possible to assign the specific network interface in the package.yaml. Activation.json file can contains more information and they can override some parts of our package.yaml configuration. In activation.json file you can also assign static ip address to interface. By deafult containers will try to use DHCP address.
-
-Example of `package.yaml` file:
-
-```
-descriptor-schema-version: 2.8
-info:
-  name: <App Name>
-  version: <App Version>
-
-app:
-  type: docker
-  cpuarch: <x86_64 or aarch64>
-
-  resources:
-    profile: <cpu, memory resource profile. Eg., default or c1.tiny or custom >
-
-  startup:
-    rootfs: rootfs.tar
-    target: <command to execute in the container>
-```
-
-
-Let's create `package.yaml` file and insert following content:
-
-```
-descriptor-schema-version: "2.10"
-
-info:
- name: Hello_World
- description: "Hello World Flask Application"
- version: "1.0"
-
-app:
- cpuarch: "x86_64"
- type: docker
- resources:
-   profile: c1.tiny
-   network:     
-     - 
-       interface-name: eth0
-       ports:
-         tcp:
-           - 5000
-
- startup:
-   rootfs: rootfs.tar
-   target: ["python3 app.py"]
-```
-
-Let's create `activation.json` file with following content:
-
-```
-{
-    "resources": {
-        "network": [{
-          "interface-name": "eth0", 
-          "network-name": "VPG0",
-          "mode": "static",
-            "ipv4": {
-                "ip": "192.168.10.10",
-                "prefix": "24",
-                "gateway": "192.168.10.1",
-                "dns": "8.8.8.8",
-                "default": true
-            }
-        }]
-    }
-}
-```
-
-Note. We are associating "eth0" interface on the app to "VPG0" network available on the device.
-
-
-`activation.json` and `package.yaml` files needs to be created under lab3 folder:
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ls
-README.md	activation.json	app		images		package.yaml
-kmazurki@KMAZURKI-M-L9FT lab3 % 
-```
-
-
-### Package the IOx Application with the ioxclient tool
-
-To package IOx application using docker image we created and package.yaml file we need use following command:
-
-`ioxclient docker package ioxapp .`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient docker package ioxapp .
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  docker-package
-Timestamp at DockerPackage start: 1680180873946
-Using the package descriptor file in the project dir
-Validating descriptor file package.yaml with package schema definitions
-Parsing descriptor file..
-Found schema version  2.10
-Loading schema file for version  2.10
-Validating package descriptor file..
-File package.yaml is valid under schema version 2.10
-Generating IOx package of type docker with layers as rootfs
-Replacing symbolically linked layers in docker rootfs, if any
-No symbolically linked layers found in rootfs. No changes made in rootfs
-Removing emulation layers in docker rootfs, if any
-The docker image is better left in it's pristine state
-Updated package metadata file :  /Users/kmazurki/Documents/iox/application_hosting_on_cisco_devices/labs/lab3/.package.metadata
-No rsa key and/or certificate files provided to sign the package
--------------------------------------------------------------------------
-Generating the envelope package
--------------------------------------------------------------------------
-Checking if package descriptor file is present..
-Skipping descriptor schema validation..
-Created Staging directory at :  /var/folders/54/bchpg7k13p71_m0pwn00qxwr0000gn/T/3477663814
-Copying contents to staging directory
-Timestamp before CopyTree: 1680180878307
-Timestamp after CopyTree: 1680180878383
-Creating artifacts manifest file
-Creating an inner envelope for application artifacts
-Including  rootfs.tar
-Generated  /var/folders/54/bchpg7k13p71_m0pwn00qxwr0000gn/T/3477663814/artifacts.tar.gz
-Parsing Package Metadata file :  /private/var/folders/54/bchpg7k13p71_m0pwn00qxwr0000gn/T/3477663814/.package.metadata
-Updated package metadata file :  /private/var/folders/54/bchpg7k13p71_m0pwn00qxwr0000gn/T/3477663814/.package.metadata
-Calculating SHA256 checksum for package contents..
-Timestamp before SHA256: 1680180881128
-Timestamp after SHA256: 1680180881128
-Path:  .package.metadata
-SHA256 : 959b0db1f28d9f79df7d5befc32631bf47c81881c25506502c2c3db72ecb02a3
-Timestamp before SHA256: 1680180881128
-Timestamp after SHA256: 1680180881128
-Path:  artifacts.mf
-SHA256 : cdd13192f84b53a228f602563d3f4959f64284f0b3afa093d3067a1ec14bc852
-Timestamp before SHA256: 1680180881128
-Timestamp after SHA256: 1680180881144
-Path:  artifacts.tar.gz
-SHA256 : 1003c96a354ebf1fda838def9c04a3544dbf7176e2440b4a00611ef777cc62a9
-Timestamp before SHA256: 1680180881144
-Timestamp after SHA256: 1680180881144
-Path:  envelope_package.tar.gz
-SHA256 : 930ce17941785eda650a6625f87bacf4b370b07402b2aaa1cda9c07b911fe084
-Timestamp before SHA256: 1680180881144
-Timestamp after SHA256: 1680180881144
-Path:  package.yaml
-SHA256 : fea778876b66b1de61df3d60360f5dab2804632fd13c03a654267b41e19fb9cf
-Generated package manifest at  package.mf
-Generating IOx Package..
-Package docker image ioxapp at /Users/kmazurki/Documents/iox/application_hosting_on_cisco_devices/labs/lab3/package.tar
-```
-
-Last two message lines indicates that the tool packaged the application successfully. Now you can deploy the package onto the IOx device instance. In the working directory you now have a `package.tar` file that is the Docker image packaged as an IOx application.
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ls
-README.md	app		package.tar
-activation.json	images		package.yaml
-kmazurki@KMAZURKI-M-L9FT lab3 % 
-```
-
-### Deploy the IOx Application
-
-To deploy using the ioxclient, you run the following command:
-
-`ioxclient application install {APPLICATION_ID} package.tar`
-
-Note. APPLICATION_ID has to be unieque and can contains only letters, numbers and underscore.
-
-Let's use hello_world as our APPLICATION_ID:
-
-`ioxclient application install hello_world package.tar`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application install hello_world package.tar
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-install
-Using the package descriptor file in the project dir
-Validating descriptor file package.yaml with package schema definitions
-Parsing descriptor file..
-Found schema version  2.10
-Loading schema file for version  2.10
-Validating package descriptor file..
-File package.yaml is valid under schema version 2.10
-Saving current configuration
-Installation Successful.
-```
-
-Installation Succesfull
-
-### Verify the Application state
-
-To verify that application was deployed succesfully run following command:
-
-`ioxclient application list`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-list
-List of installed App : 
- 1. hello_world --->   DEPLOYED
-kmazurki@KMAZURKI-M-L9FT lab3 % 
-```
-
-You can also verify this accessing IOX Local Manager by opening webbrowser and navigating to: https://10.10.20.48/iox/login/
-
-![localmanager](images/local_manager2.png)
-
-### Activate and Start the Application
-
-To Activate your application, run the following command:
-
-`ioxclient application activate --payload activation.json hello_world`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application activate --payload activation.json hello_world 
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-activate
-Payload file : activation.json. Will pass it as application/json in request body..
-Oops, access token expired
-Saving current configuration
-Retyring the command
-Payload file : activation.json. Will pass it as application/json in request body..
-App hello_world is Activated
-```
-
-Let's verify that using `ioxclient application list`:
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-list
-List of installed App : 
- 1. hello_world --->  ACTIVATED
- ```
-
-To Start Application use following command:
-
-`ioxclient application start hello_world`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application start hello_world
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-start
-App hello_world is Started
-
-kmazurki@KMAZURKI-M-L9FT lab3 % 
-```
-
-If the command is successful, a message indicates that the application is Started.
-
-You can verify that running 'ioxclient application list' command:
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-list
-List of installed App : 
- 1. hello_world --->    RUNNING
-```
-
-To make our application accessible from outside, you need to configure port forwarding:
-
-`ip nat inside source static tcp 192.168.10.10 5000 interface GigabitEthernet1 5000`
-
-```
-csr1000v-1#conf t
-Enter configuration commands, one per line.  End with CNTL/Z.
-csr1000v-1(config)#ip nat inside source static tcp 192.168.10.10 5000 interface GigabitEthernet1 5000
-csr1000v-1(config)#exit
-```
-
-Now you can connect to the following URL to see website with Hello World! text:
-
-`http://10.10.20.48:5000`
-
-![hello_world](images/hello_world.png)
 
 <br>
 
-### Stop, Deactivate and Uninstall the Application
+## 2. Configure and Run Gitlab
 
-If you want to remove your application from device, you need to first stop it using command:
-`ioxclient application stop {APPLICATION_ID}`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-stop
-App hello_world is Stopped
-```
-![stop app](images/app_1.png)
-
-Next deactivate application using command:
-`ioxclient application deactivate {APPLICATION_ID}`
+To run Gitlab container you need to provide a few options at runtime:
 
 ```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-deactivate
-App hello_world is Deactivated
-```
-![stop app](images/app_2.png)
-
-And finally uninstall application using command:
-`ioxclient application uninstall {APPLICATION_ID}`
-
-```
-kmazurki@KMAZURKI-M-L9FT lab3 % ioxclient application list
-Currently active profile :  default
-Secure client authentication:  no
-Command Name:  application-uninstall
-Successfully uninstalled app  hello_world
+docker run -d --hostname 198.18.133.252 -p 443:443 -p 80:80 -p 22:22 --name gitlab-linode --restart always  gitlab/gitlab-ce:latest
 ```
 
-![stop app](images/app_3.png)
+`-d` runs docker container in background
 
+`--hostname` defines the container's internal hostname (use ip address of your workstation)
+
+`-p` publish container's port(s) to the host
+
+`--name` assign a name to the container
+
+`--restart` restart policy to apply when a container exits
+
+
+To check ip address of workstation use `ipconfig` command:
+
+```
+C:\Users\Administrator\Desktop>ipconfig
+
+Windows IP Configuration
+
+
+Ethernet adapter Ethernet0:
+
+   Connection-specific DNS Suffix  . : demo.dcloud.cisco.com
+   IPv4 Address. . . . . . . . . . . : 198.18.133.252
+   Subnet Mask . . . . . . . . . . . : 255.255.192.0
+   Default Gateway . . . . . . . . . : 198.18.128.1
+```
+
+Then run docker container use following command (replacing ip address with IP address of workstation):
+
+```
+C:\Users\Administrator\Desktop>docker run -d --hostname 198.18.133.252 -p 443:443 -p 80:80 -p 22:22 --name gitlab-linode --restart always  gitlab/gitlab-ce:latest
+e692f708e88e7c0fb3d8e528dea5d2aabd95f6932e075abfc83cf6e1bd815675
+```
+Container may take couple minutes to start.
+To find out more information about startup process inspect logs:
+
+`docker logs -f gitlab-linode`
+
+To exit from log monitoring process enter CTRL+C.
+
+Open webbrowser and navigate to IP address you specified in --hostname option during container startup:
+
+`http://198.18.133.252`
+
+If you see HTTP error 502 try waiting few more minutes and refresh page.
+
+First time you access Gitlab site you will be propmed to setup root password. Enter complex password and save it.
+
+If you are not asked to set up a root password, follow this workaround:
+
+1. Enter Gitlab-CE container shell: `docker exec -it gitlab-linode /bin/bash`
+2. Run following command to setup new root password (minimum 8 characters): `gitlab-rake "gitlab:password:reset[root]"`
+
+```root@198:/# gitlab-rake "gitlab:password:reset[root]"
+Enter password:
+Confirm password:
+Password successfully updated for user with username root.
+```
+3. Exit from shell container by typing `exit`
+
+```
+root@198:/# exit
+exit
+
+C:\Users\Administrator\Desktop>
+```
+4. Now you can login to Gitlab with your new password and root login.
+
+
+![gitlab_1](images/gitlab_1.png)
+
+<br>
+
+## 3. Install and register Gitlab runner 
+
+GitLab Runner is an open-source application that is used in conjunction with GitLab CI/CD (Continuous Integration/Continuous Deployment) pipelines. It's designed to run jobs and tasks as part of your CI/CD pipeline.
+
+To start gitlab runner container use following command:
+
+```docker run -d --name gitlab-runner --restart always gitlab/gitlab-runner:latest```
+
+```
+C:\Users\Administrator\Desktop>docker run -d --name gitlab-runner --restart always gitlab/gitlab-runner:latest
+Unable to find image 'gitlab/gitlab-runner:latest' locally
+latest: Pulling from gitlab/gitlab-runner
+edaedc954fb5: Pull complete
+8c3aebe7713f: Pull complete
+5b1147e4eba7: Pull complete
+Digest: sha256:9cabe88ca172e44ea41603aaf43cd7985fac76d46c6dac2d9c4e5899ba7a2be1
+Status: Downloaded newer image for gitlab/gitlab-runner:latest
+e0303ca291b233016529828448f9fc282dd03c7d7e0bd21d973a1b6ba6fcec16
+```
+
+Check if Gitlab runner is running:
+
+```
+C:\Users\Administrator\Desktop>docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED              STATUS                       PORTS                                                                    NAMES
+e0303ca291b2   gitlab/gitlab-runner:latest    "/usr/bin/dumb-init …"   About a minute ago   Up About a minute                                                                                     gitlab-runner
+e692f708e88e   gitlab/gitlab-ce:latest        "/assets/wrapper"        About an hour ago    Up About an hour (healthy)   0.0.0.0:22->22/tcp, 0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp             gitlab-linode
+f0d13245a4d0   yangsuite-dcloud:latest        "/start"                 7 months ago         Up Less than a second        0.0.0.0:8480->8480/tcp, 0.0.0.0:58500-58501->58500-58501/tcp             yangsuite
+0615e3d8832a   tig_mdt:latest                 "/start.sh"              12 months ago        Up Less than a second        0.0.0.0:3000->3000/tcp, 0.0.0.0:57500-57501->57500-57501/tcp, 5201/tcp   tig_mdt
+d7cc1df5338f   portainer/portainer-ce:2.9.3   "/portainer"             12 months ago        Up Less than a second        0.0.0.0:8000->8000/tcp, 0.0.0.0:9443->9443/tcp, 9000/tcp                 portainer
+```
+
+After you start your gitlab runner you need to register this runner to run jobs using following steps:
+
+1. Navigate to Gitlab website: `http://198.18.133.252`
+
+2. Click <b>Configure GitLab</b>
+
+![gitlab_3](images/gitlab_3.png)
+
+3. Go to <b>CI/CD -> Runners</b>
+
+![gitlab_4](images/gitlab_4.png)
+
+4. Click <b>New instance runner</b>
+
+5. Create new runner with following options:
+
+- Platform: Linux
+- Enable option: <b>Run untagged jobs</b>
+
+![gitlab_5](images/gitlab_5.png)
+
+6. Click <b>Create runner</b> button
+
+7. To register gitlab runner copy command from Step 1 from gitlab website:
+
+![gitlab_6](images/gitlab_6.png)
+
+8. Enter gitlab-runner container shell: `docker exec -it gitlab-runner /bin/bash`
+
+9. Paste and run command copied in step 7:
+
+`gitlab-runner register  --url http://198.18.133.252  --token glrt-ywdjYxddYVTEbR-wGKdb`
+
+- keep GitLab URL and name for the runner as defaults [] by hittng ENTER
+- choose the shell executor
+
+```
+root@e0303ca291b2:/# gitlab-runner register  --url http://198.18.133.252  --token glrt-ywdjYxddYVTEbR-wGKdb
+Runtime platform                                    arch=amd64 os=linux pid=42 revision=674e0e29 version=16.2.1
+Running in system-mode.
+
+Enter the GitLab instance URL (for example, https://gitlab.com/):
+[http://198.18.133.252]:
+Verifying runner... is valid                        runner=ywdjYxddY
+Enter a name for the runner. This is stored only in the local config.toml file:
+[e0303ca291b2]:
+Enter an executor: kubernetes, docker, shell, parallels, ssh, virtualbox, docker-autoscaler, docker+machine, instance, custom, docker-windows:
+shell
+Runner registered successfully. Feel free to start it, but if it's running already the config should be automatically reloaded!
+
+Configuration (with the authentication token) was saved in "/etc/gitlab-runner/config.toml"
+root@e0303ca291b2:/#
+```
+
+11. To view runner, go to <b>Admin Area > Runners</b>
+
+![gitlab_7](images/gitlab_7.png)
+
+12. Verify that status of runner is Online:
+
+![gitlab_8](images/gitlab_8.png)
+
+If you see green circle next to your runner, it means that you have a runner available to proces your jobs and you can create your first project!
+
+<br>
+
+## 4. Install Terraform on Gitlab runner
+
+To install terraform on Gitlab runner enter gitlab-runner container shell: `docker exec -it gitlab-runner /bin/bash` and paste following commands:
+
+
+```
+apt update && apt install lsb-release gpg
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+apt update && apt install terraform
+```
+
+Verify that terraform was installed succesfully:
+
+```
+root@e0303ca291b2:/# terraform --version
+Terraform v1.5.5
+on linux_amd64
+```
+
+## 5. Create your first project
+
+To create a new project click <b>Create a project</b>
+
+![gitlab_2](images/gitlab_2.png)
+
+<b>Create blank project</b>
+
+![gitlab_9](images/gitlab_9.png)
+
+Assign project name: `terraform-iac` and pick a group or namespace (Users -> root) then click <b>Create project button</b>
+
+![gitlab_10](images/gitlab_10.png)
+
+You should see terrraform-iac project created successfully:
+
+![gitlab_11](images/gitlab_11.png)
+
+<br>
+
+## 6. Clone and modify repository
+
+Navigate to your terraform-iac project, click and expand Clone button and copy <b>Clone with HTTP</b> URL:
+
+![gitlab_12](images/gitlab_12.png)
+
+```http://198.18.133.252/root/terraform-iac.git```
+
+Open Windows Command prompt and clone terraform-iac empty repo using git clone command:
+
+`git clone http://198.18.133.252/root/terraform-iac.git`
+
+You wil be asked to enter credentials for your Gitlab instance. Use root as username and password you set up in section (2. Configure and Run Gitlab)
+
+
+```
+C:\Users\Administrator>git clone http://198.18.133.252/root/terraform-iac.git
+Cloning into 'terraform-iac'...
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (3/3), done.
+
+```
+
+Open Visual Studio Code Editor and navigate to File -> Open Folder and choose location of your cloned repository:
+
+![gitlab_13](images/gitlab_13.png)
+
+Click Select Folder and Yes, I trust the authors option on next screen:
+
+![gitlab_14](images/gitlab_14.png)
+
+In repository you only have README.md file, now you need to copy files from terraform-bootcamp repository from labs/lab3/scripts folder into your 
+<br>
+
+## 7. Create Gitlab CICD pipeline
+
+                                                                                                                                              
+ 
 <br></br>
 
 ---
 
-### Congratulations on completing the Building an IOx Application with Docker lab! You have taken an important step in learning how to bulid IOx Applications and package them using ioxclient.
+### Congratulations on completing the Troubleshoot IOx Applications lab! You have taken an important step in learning how to solve application and platform related issues. You resolved a code-based failure on an application deployed on CSR1000v router using the application console and application log files. You identify resource contention that prevents applications from activating on an CSR1000v.
