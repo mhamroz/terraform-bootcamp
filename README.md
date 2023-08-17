@@ -21,7 +21,7 @@ Labs can also be done without installing anything on local machine using https:/
 
 ## LABS
 
-- [LAB 1 - Guest Shell, Python scripting on Box](labs/lab1/README.md)
+- [LAB 1 - Introduction to Terraform](labs/lab1/README.md)
 
 - [LAB 2 - BGP EVPN on IOS-XE Cat9k using Terraform](labs/lab2/README.md)
 

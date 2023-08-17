@@ -14,7 +14,7 @@ Multiple solutions are available to implement CI/CD automation for the Terraform
 
 - Docker installed
 
-- Access to ACI Simulator
+- Access to the internet
 
 ## Time Estimates
 

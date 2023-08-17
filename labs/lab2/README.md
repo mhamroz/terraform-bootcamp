@@ -2,19 +2,30 @@
 
 ## Lab Overview
 
-This lab focuses on configuring BGP EVPN VXLAN on Cisco Catalyst 9000 Series Switches running Cisco IOS XE software using Terraform. 
+This lab demonstrates how to configure BGP EVPN VXLAN on Cisco Catalyst 9000 Series Switches running Cisco IOS XE software using Terraform. 
+
+`Note` This lab focus on interacting with Cisco IOS-XE devices using Terraform and not on an in-depth technical exploration of BGP EVPN VXLAN. As a result, a deep understanding of EVPN is not required.
 
 ### BGP EVPN VXLAN
 
 BGP EVPN VXLAN is a campus network solution for Cisco Catalyst 9000 Series Switches running Cisco IOS XE software. It is designed to provide L2/L3 network services with greater flexibility, mobility, and scalability and also address the well-known classic networking protocols challenges.
 
 You can find additional information and the fundamental terminology necessary to understand BGP EVPN VXLAN through the following links:
+
 - [BGP EVPN VXLAN Overview](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/bgp_evpn_vxlan_overview.html)
+
 - [Why Transition to BGP EVPN VXLAN in Enterprise Campus](https://blogs.cisco.com/networking/why-transition-to-bgp-evpn-vxlan-in-enterprise-campus)
+
+- [Configuring EVPN VXLAN Layer 3 Overlay Network](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_3_overlay_network.html)
+- [Configuring EVPN VXLAN Layer 2 Overlay Network](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_2_overlay_network.html)
+
 
 <br>
 
-This lab will construct [Layer 3 VNI](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_3_overlay_network.html) and [Layer 2 VNI](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-8/configuration_guide/vxlan/b_178_bgp_evpn_vxlan_9300_cg/configuring_evpn_vxlan_layer_2_overlay_network.html)
+In this lab we will be using [terraform-iosxe-evpn-example](https://github.com/netascode/terraform-iosxe-evpn-example) repository with [IOS-XE Provider](https://registry.terraform.io/providers/netascode/iosxe/latest/docs) and following Terraform modules:
+
+- [evpn-ospf-underlay](https://registry.terraform.io/modules/netascode/evpn-ospf-underlay/iosxe/latest)
+- [evpn-overlay](https://registry.terraform.io/modules/netascode/evpn-ospf-underlay/iosxe/latest)
 
 
 <br>
@@ -27,7 +38,11 @@ This lab will construct [Layer 3 VNI](https://www.cisco.com/c/en/us/td/docs/swit
 
 - Docker installed
 
+- `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
+
 - Access to Catalyst 9000 series switches (2x Leafs, 1xSpine)
+
+- Access to the internet
 
 - Basic understanding of Terraform
 
@@ -37,8 +52,7 @@ This lab will construct [Layer 3 VNI](https://www.cisco.com/c/en/us/td/docs/swit
 
 <br></br>
 
-
-## Goal
+## 1. Install GITLAB with Docker
 
 The goal of this Docker lab is to provide you with a hands-on experience with Docker, a popular containerization platform. 
 By completing this lab, you will learn the following skills:
