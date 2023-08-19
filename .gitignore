@@ -1,9 +1,4 @@
 .DS_Store
-.package.metadata/
-.package.metadata
-package.tar
-activation_custom.json
-cisco_notes.txt
 README.png
 README.jpeg
 README.html
