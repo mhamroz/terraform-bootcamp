@@ -16,7 +16,7 @@ fabric:
         ip_learning: true
       - name: L2_102
         id: 102
-      - name: GREEN_1000
+      - name: GREEN_10
         id: 10
         ipv4_multicast_group: 225.0.1.1
         l3_service: GREEN

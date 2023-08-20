@@ -177,7 +177,7 @@ fabric:
         ip_learning: true
       - name: L2_102
         id: 102
-      - name: GREEN_1000
+      - name: GREEN_10
         id: 10
         ipv4_multicast_group: 225.0.1.1
         l3_service: GREEN
@@ -632,11 +632,821 @@ Use the following details to log in to the devices:
 | C9k-leaf2 | 198.18.1.32 | developer/C1sco12345 | 
 
 
-Click on Putty icon on taskbar and open all 3
+1. Use `show bgp l2vpn evpn summary` on C9k-spine (198.18.1.21) device to verify Spine BGP peering to the VTEP(s) in the EVPN address-family:
+
+![terraform_16](images/terraform_16.png)
 
 
+1. Use `show bgp l2vpn evpn summary` on C9k-leaf1 (198.18.1.31) and C9k-leaf2 (198.18.1.32) to verify VTEP BGP peering to the Spine in the EVPN address-family:
 
+![terraform_17](images/terraform_17.png)
 
+3. Use `show nve vni` to verify VXLAN VNI status on leaf devices:
+
+![terraform_18](images/terraform_18.png)
+
+4. You can also verify operational status by checking if you have network connectivity between two ubuntu machines in CML.
+
+- Open Google Chrome and click on CML bookmark:
+
+![cml_1](images/cml_1.png)
+
+- Enter lab and locate 2 ubuntu machines (ubuntu-1 and ubuntu-2)
+
+- Click on ubuntu-1 machine and open Console (if you are asked for username and password type: cisco / cisco)
+
+![cml_2](images/cml_2.png)
+
+- Ping ubuntu-2 machine (10.10.10.11)
+
+![cml_3](images/cml_3.png)
+
+`Note` ubuntu-2 machine might be misconfigured in this lab and ping might be unsuccessful. To check that open Console for ubuntu-2 machine and execute command: `ip addr show ens3`. If ip address is not matching 10.10.10.11 then change it using command:
+`ip addr add 10.10.10.11/255.255.255.0 dev ens3`
+
+<br>
+
+## 8. Updating existing network configuration state
+
+Because we've separated data from the Terraform code, making changes to the existing network configuration only requires editing the files in the data folder.
+
+Let's change ipv4 address on SVI for VLAN10 from 10.10.10.1 to 192.168.10.1.
+
+To do this open `overlay.yaml` file in Visual Studio Code and edit line nr 23:
+
+change: 
+
+```yaml
+ipv4_address: 10.10.10.1
+```
+
+to:
+
+```yaml
+ipv4_address: 192.168.10.1
+```
+
+![terraform_19](images/terraform_19.png)
+
+Now run `terraform plan` to check what changes terraform will make:
+
+```sh
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform plan
+data.utils_yaml_merge.model: Reading...
+data.utils_yaml_merge.model: Read complete after 0s [id=e44dd20195b09a8032ee336a739250afdeca7334]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.pim_loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.pim_loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_msdp.msdp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/Cisco-IOS-XE-multicast:msdp]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.pim_loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]   
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]  
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.3]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.3]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]  
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]  
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols: 
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"] will be updated in-place
+  ~ resource "iosxe_interface_vlan" "l2_svi" {
+        id                = "Cisco-IOS-XE-native:native/interface/Vlan=10"
+      ~ ipv4_address      = "10.10.10.1" -> "192.168.10.1"
+        name              = 10
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"] will be updated in-place
+  ~ resource "iosxe_interface_vlan" "l2_svi" {
+        id                = "Cisco-IOS-XE-native:native/interface/Vlan=10"
+      ~ ipv4_address      = "10.10.10.1" -> "192.168.10.1"
+        name              = 10
+        # (4 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 2 to change, 0 to destroy.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform   
+apply" now.
+```
+
+In the summary terraform will flag the changes which will be executed to existing infrastructure with `terraform apply` command.
+
+You can see that there would be 2 changes to resource "iosxe_interface_vlan" "l2_svi" on both leaf devices. IP Address on SVI for VLAN10 will be change from 10.10.10.1 to 192.168.10.1.
+
+Let's run `terraform apply` command now:
+
+```sh
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform apply
+data.utils_yaml_merge.model: Reading...
+data.utils_yaml_merge.model: Read complete after 0s [id=e44dd20195b09a8032ee336a739250afdeca7334]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.pim_loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.pim_loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.pim_loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2]
+module.iosxe_evpn_ospf_underlay.iosxe_msdp.msdp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/Cisco-IOS-XE-multicast:msdp]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]   
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]  
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.3]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.3]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols: 
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"] will be updated in-place
+  ~ resource "iosxe_interface_vlan" "l2_svi" {
+        id                = "Cisco-IOS-XE-native:native/interface/Vlan=10"
+      ~ ipv4_address      = "10.10.10.1" -> "192.168.10.1"
+        name              = 10
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"] will be updated in-place
+  ~ resource "iosxe_interface_vlan" "l2_svi" {
+        id                = "Cisco-IOS-XE-native:native/interface/Vlan=10"
+      ~ ipv4_address      = "10.10.10.1" -> "192.168.10.1"
+        name              = 10
+        # (4 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 2 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Modifying... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Modifying... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Modifications complete after 1s [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Modifications complete after 1s [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+
+Apply complete! Resources: 0 added, 2 changed, 0 destroyed.
+
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> 
+```
+
+<br>
+
+Verify that SVI IP Address for VLAN 10 on both leaf devices changed by running `show ip int brief` on both leaf devices:
+
+![terraform_20](images/terraform_20.png)
+
+<br>
+
+Now let's remove Layer 3 VNI routing for VRF BLUE by removing SVI for VLAN 1011. We can do this by removing following lines in `overlay.yaml` file:
+
+![terraform_21](images/terraform_21.png)
+
+Run `terraform plan` to check what resources will be changed / destroyed:
+
+```sh
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform plan
+data.utils_yaml_merge.model: Reading...
+data.utils_yaml_merge.model: Read complete after 1s [id=9f71c787c903954d0aedfaafb0496dd26ba1cf33]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.pim_loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.pim_loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_msdp.msdp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/Cisco-IOS-XE-multicast:msdp]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.pim_loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.3]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/pim]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.3]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols: 
+  ~ update in-place
+  - destroy
+
+Terraform will perform the following actions:
+
+  # module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_evpn_instance" "l2_evpn_instance" {
+      - device                              = "LEAF-1" -> null
+      - evpn_instance_num                   = 1011 -> null
+      - id                                  = "Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011" -> null
+      - vlan_based_encapsulation            = "vxlan" -> null
+      - vlan_based_rd                       = "65000:1011" -> null
+      - vlan_based_replication_type_ingress = true -> null
+      - vlan_based_route_target_export      = "65000:1011" -> null
+      - vlan_based_route_target_import      = "65000:1011" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_evpn_instance" "l2_evpn_instance" {
+      - device                              = "LEAF-2" -> null
+      - evpn_instance_num                   = 1011 -> null
+      - id                                  = "Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011" -> null
+      - vlan_based_encapsulation            = "vxlan" -> null
+      - vlan_based_rd                       = "65000:1011" -> null
+      - vlan_based_replication_type_ingress = true -> null
+      - vlan_based_route_target_export      = "65000:1011" -> null
+      - vlan_based_route_target_import      = "65000:1011" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"] will be updated in-place
+  ~ resource "iosxe_interface_nve" "nve" {
+        id                             = "Cisco-IOS-XE-native:native/interface/nve=1"
+        name                           = 1
+      ~ vnis                           = [
+          - {
+              - ingress_replication = true -> null
+              - vni_range           = "11011" -> null
+            },
+            # (3 unchanged elements hidden)
+        ]
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"] will be updated in-place
+  ~ resource "iosxe_interface_nve" "nve" {
+        id                             = "Cisco-IOS-XE-native:native/interface/nve=1"
+        name                           = 1
+      ~ vnis                           = [
+          - {
+              - ingress_replication = true -> null
+              - vni_range           = "11011" -> null
+            },
+            # (3 unchanged elements hidden)
+        ]
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_interface_vlan" "l2_svi" {
+      - autostate         = false -> null
+      - device            = "LEAF-1" -> null
+      - id                = "Cisco-IOS-XE-native:native/interface/Vlan=1011" -> null
+      - ipv4_address      = "172.17.1.1" -> null
+      - ipv4_address_mask = "255.255.255.0" -> null
+      - name              = 1011 -> null
+      - vrf_forwarding    = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_interface_vlan" "l2_svi" {
+      - autostate         = false -> null
+      - device            = "LEAF-2" -> null
+      - id                = "Cisco-IOS-XE-native:native/interface/Vlan=1011" -> null
+      - ipv4_address      = "172.17.1.1" -> null
+      - ipv4_address_mask = "255.255.255.0" -> null
+      - name              = 1011 -> null
+      - vrf_forwarding    = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-1" -> null
+      - evpn_instance     = 1011 -> null
+      - evpn_instance_vni = 11011 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011" -> null
+      - vlan_id           = 1011 -> null
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-2" -> null
+      - evpn_instance     = 1011 -> null
+      - evpn_instance_vni = 11011 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011" -> null
+      - vlan_id           = 1011 -> null
+    }
+
+Plan: 0 to add, 2 to change, 6 to destroy.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform   
+apply" now.
+```
+
+Terraform will destroy 6 resources and change 2. Run `terraform apply` to execute changes:
+
+```sh
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform apply
+data.utils_yaml_merge.model: Reading...
+data.utils_yaml_merge.model: Read complete after 0s [id=9f71c787c903954d0aedfaafb0496dd26ba1cf33]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.pim_loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_ospf.ospf["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_pim.pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.pim_loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.vtep_loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_overlay.iosxe_evpn.evpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.vtep_loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.pim_loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=100/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_msdp.msdp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/ip/Cisco-IOS-XE-multicast:msdp]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.loopback_interface_pim["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.loopback_interface_ospf_process["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Loopback=0/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.spine_fabric_interface["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ethernet.leaf_fabric_interface["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.spine_interface_ospf["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.spine_interface_pim["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_l2vpn.bgp_l2vpn["SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_neighbor.bgp_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/neighbor=100.65.0.3]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=102]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=101]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=GREEN]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=10]
+module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vrf/definition=BLUE]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf.leaf_interface_ospf["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_pim.leaf_interface_pim["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/pim]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F2/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.spine_interface_ospf_process["SPINE-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-1/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.2]
+module.iosxe_evpn_overlay.iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine["LEAF-2/SPINE-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/no-vrf/l2vpn=evpn/l2vpn-evpn/neighbor=100.65.0.3]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/101"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-1/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_ospf_process.leaf_interface_ospf_process["LEAF-2/0"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/GigabitEthernet=1%2F0%2F1/ip/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id=1]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/102"]: Refreshing state... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1000"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1000]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1010"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1010]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=10]  
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv6=unicast]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Refreshing state... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf["LEAF-1"]: Refreshing state... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000/address-family/with-vrf/ipv4=unicast]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols: 
+  ~ update in-place
+  - destroy
+
+Terraform will perform the following actions:
+
+  # module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_evpn_instance" "l2_evpn_instance" {
+      - device                              = "LEAF-1" -> null
+      - evpn_instance_num                   = 1011 -> null
+      - id                                  = "Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011" -> null
+      - vlan_based_encapsulation            = "vxlan" -> null
+      - vlan_based_rd                       = "65000:1011" -> null
+      - vlan_based_replication_type_ingress = true -> null
+      - vlan_based_route_target_export      = "65000:1011" -> null
+      - vlan_based_route_target_import      = "65000:1011" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_evpn_instance" "l2_evpn_instance" {
+      - device                              = "LEAF-2" -> null
+      - evpn_instance_num                   = 1011 -> null
+      - id                                  = "Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011" -> null
+      - vlan_based_encapsulation            = "vxlan" -> null
+      - vlan_based_rd                       = "65000:1011" -> null
+      - vlan_based_replication_type_ingress = true -> null
+      - vlan_based_route_target_export      = "65000:1011" -> null
+      - vlan_based_route_target_import      = "65000:1011" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"] will be updated in-place
+  ~ resource "iosxe_interface_nve" "nve" {
+        id                             = "Cisco-IOS-XE-native:native/interface/nve=1"
+        name                           = 1
+      ~ vnis                           = [
+          - {
+              - ingress_replication = true -> null
+              - vni_range           = "11011" -> null
+            },
+            # (3 unchanged elements hidden)
+        ]
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"] will be updated in-place
+  ~ resource "iosxe_interface_nve" "nve" {
+        id                             = "Cisco-IOS-XE-native:native/interface/nve=1"
+        name                           = 1
+      ~ vnis                           = [
+          - {
+              - ingress_replication = true -> null
+              - vni_range           = "11011" -> null
+            },
+            # (3 unchanged elements hidden)
+        ]
+        # (4 unchanged attributes hidden)
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_interface_vlan" "l2_svi" {
+      - autostate         = false -> null
+      - device            = "LEAF-1" -> null
+      - id                = "Cisco-IOS-XE-native:native/interface/Vlan=1011" -> null
+      - ipv4_address      = "172.17.1.1" -> null
+      - ipv4_address_mask = "255.255.255.0" -> null
+      - name              = 1011 -> null
+      - vrf_forwarding    = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_interface_vlan" "l2_svi" {
+      - autostate         = false -> null
+      - device            = "LEAF-2" -> null
+      - id                = "Cisco-IOS-XE-native:native/interface/Vlan=1011" -> null
+      - ipv4_address      = "172.17.1.1" -> null
+      - ipv4_address_mask = "255.255.255.0" -> null
+      - name              = 1011 -> null
+      - vrf_forwarding    = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"] will be destroyed
+  # (because key ["LEAF-1/1011"] is not in for_each map)
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-1" -> null
+      - evpn_instance     = 1011 -> null
+      - evpn_instance_vni = 11011 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011" -> null
+      - vlan_id           = 1011 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"] will be destroyed
+  # (because key ["LEAF-2/1011"] is not in for_each map)
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-2" -> null
+      - evpn_instance     = 1011 -> null
+      - evpn_instance_vni = 11011 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011" -> null
+      - vlan_id           = 1011 -> null
+    }
+
+Plan: 0 to add, 2 to change, 6 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Vlan=1011]    
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1011]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Modifying... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Modifying... [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/1011"]: Destruction complete after 0s
+module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/1011"]: Destruction complete after 0s
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Destroying... [id=Cisco-IOS-XE-native:native/l2vpn/Cisco-IOS-XE-l2vpn:evpn_cont/evpn-instance/evpn/instance/instance=1011]
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-1/1011"]: Destruction complete after 0s
+module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/1011"]: Destruction complete after 0s
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-2/1011"]: Destruction complete after 1s
+module.iosxe_evpn_overlay.iosxe_evpn_instance.l2_evpn_instance["LEAF-1/1011"]: Destruction complete after 1s
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-2"]: Modifications complete after 1s [id=Cisco-IOS-XE-native:native/interface/nve=1]
+module.iosxe_evpn_overlay.iosxe_interface_nve.nve["LEAF-1"]: Modifications complete after 1s [id=Cisco-IOS-XE-native:native/interface/nve=1]
+
+Apply complete! Resources: 0 added, 2 changed, 6 destroyed.
+```
+
+<br>
+
+Verify that interface Vlan1011 was removed from both leaf devices by executing `show ip int brief`. Check that interface Vlan1011 is not present in the output.
+
+![terraform_22](images/terraform_22.png)
+
+<br>
+
+## 9. Remove all network configurations for BGP EVPN VXLAN (terraform destroy)
+
+To remove all network configurations for BGP EVPN VXLAN we can simply execute `terraform destroy` command.
+Terraform destroy is used to tear down or destroy the resources that were created or managed using a Terraform configuration. When you run terraform destroy, Terraform identifies the resources defined in your configuration and takes the necessary actions to remove those resources from your infrastructure. 
 
 
 
@@ -644,4 +1454,4 @@ Click on Putty icon on taskbar and open all 3
 
 ---
 
-### Congratulations on completing the Docker Introduction lab! You have taken an important step in learning how to use Docker to build, ship, and run applications in a containerized environment.
+### Congratulations on your successful completion of the Terraform lab with BGP EVPN VXLAN on Cisco Catalyst 9K Switches. Well done!
