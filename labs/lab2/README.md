@@ -52,7 +52,7 @@ In this lab we will be using code [terraform-iosxe-evpn-example](https://github.
 
 <br></br>
 
-## 1. Clone terraform-bootcamp-evpn repository to workstation
+## 1. Clone terraform-bootcamp repository to workstation
 
 Click on `Windows CMD prompt` icon on Workstation Desktop
 
@@ -60,7 +60,7 @@ Click on `Windows CMD prompt` icon on Workstation Desktop
 
 Clone terraform-bootcamp-evpn repository to Desktop by running following command:
 
-`git clone https://github.com/kuba-mazurkiewicz/terraform-bootcamp-evpn.git`
+`git clone https://github.com/kuba-mazurkiewicz/terraform-bootcamp.git`
 
 ![terraform_2](images/terraform_2.png)
 
@@ -68,7 +68,7 @@ You will be asked to Sign in to GitHub. Use `access token` provided during labs
 
 ![terraform_3](images/terraform_3.png)
 
-After cloning the repository, open the repository folder on your desktop. Right-click on the 'terraform-bootcamp-evpn' folder and select `Open with Code`
+After cloning the repository, open the repository folder on your desktop. Right-click on the `terraform-bootcamp` folder and select `Open with Code`
 
 ![terraform_4](images/terraform_4.png)
 
