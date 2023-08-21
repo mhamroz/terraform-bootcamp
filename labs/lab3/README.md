@@ -6,6 +6,7 @@ Multiple solutions are available to implement CI/CD automation for the Terraform
 
 <br>
 
+
 ## Pre-requisites
 
 - Use an IDE of your choice. This tutorial will assume Visual Studio Code
@@ -14,11 +15,17 @@ Multiple solutions are available to implement CI/CD automation for the Terraform
 
 - Docker installed
 
+- `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
+
+- Access to Catalyst 9000 series switches (2x Leafs, 1xSpine)
+
 - Access to the internet
+
+- Basic understanding of Terraform
 
 ## Time Estimates
 
-45 minutes
+60 minutes
 
 <br></br>
 
