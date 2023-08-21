@@ -36,8 +36,6 @@ In this lab we will be using code [terraform-iosxe-evpn-example](https://github.
 
 - Git installed
 
-- Docker installed
-
 - `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
 
 - Access to Catalyst 9000 series switches (2x Leafs, 1xSpine)
@@ -48,11 +46,13 @@ In this lab we will be using code [terraform-iosxe-evpn-example](https://github.
 
 ## Time Estimates
 
-45 minutes
+60 minutes
 
 <br></br>
 
 ## 1. Clone terraform-bootcamp repository to workstation
+
+`Note` If you already clone the repository you can skip below steps and go to next task #2
 
 Click on `Windows CMD prompt` icon on Workstation Desktop
 
@@ -72,8 +72,17 @@ After cloning the repository, open the repository folder on your desktop. Right-
 
 ![terraform_4](images/terraform_4.png)
 
+<br>
 
-Open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Terminal`
+## 2. Inspect yaml files in `data` directory
+
+The configuration is derived from a set of yaml files in the data directory. This allows to configure BGP EVPN VXLAN in minutes using an easy to use data model. It takes away the complexity of having to deal with references, dependencies or loops. By completely separating data (defining variables) from logic (infrastructure declaration), it allows the user to focus on describing the intended configuration while using a set of terraform modules.
+
+Same approach is being used in `Cisco Nexus-as-Code` project. More information can be found here: https://cisco.com/go/nexusascode
+
+<br>
+
+To inspect files open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Terminal`
 
 ![terraform_5](images/terraform_5.png)
 
@@ -86,17 +95,6 @@ Navigate to labs/lab2/evpn folder in terminal by executing command: `cd labs/lab
 and expand same evpn folder on right hand side of Visual Studio Code to open inspect files in Editor:
 
 ![terraform_11](images/terraform_11.png)
-
-
-<br>
-
-## 2. Inspect yaml files in `data` directory
-
-The configuration is derived from a set of yaml files in the data directory. This allows to configure BGP EVPN VXLAN in minutes using an easy to use data model. It takes away the complexity of having to deal with references, dependencies or loops. By completely separating data (defining variables) from logic (infrastructure declaration), it allows the user to focus on describing the intended configuration while using a set of terraform modules.
-
-Same approach is being used in `Cisco Nexus-as-Code` project. More information can be found here: https://cisco.com/go/nexusascode
-
-<br>
 
 File `inventory.yaml` contains hostnames and urls for spine and leafs used in lab topology:
 
