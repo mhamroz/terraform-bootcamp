@@ -386,6 +386,8 @@ The terraform `apply` command is used to apply changes in the configuration. We 
 
 `terraform apply plan.tfplan`
 
+`Note` If you will receive errors after running above command try to run this command with parallelism=1 option: `terraform apply --parallelism=1 plan.tfplan` The parallelism option in Terraform controls the number of resource operations (creation, updating, deletion, etc.) that can be performed concurrently. By default (10), Terraform attempts to perform these operations in parallel to improve efficiency and reduce the time it takes to apply changes. Parallel operations in Terraform can potentially cause errors when the underlying API is slow and unable to handle the requests.
+
 ```sh
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform apply plan.tfplan
 module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"]: Creating...
@@ -1446,8 +1448,419 @@ Verify that interface Vlan1011 was removed from both leaf devices by executing `
 ## 9. Remove all network configurations for BGP EVPN VXLAN (terraform destroy)
 
 To remove all network configurations for BGP EVPN VXLAN we can simply execute `terraform destroy` command.
-Terraform destroy is used to tear down or destroy the resources that were created or managed using a Terraform configuration. When you run terraform destroy, Terraform identifies the resources defined in your configuration and takes the necessary actions to remove those resources from your infrastructure. 
 
+`Note` If you will receive errors after running above command try to run this command with parallelism=1 option: `terraform destroy --parallelism=1` The parallelism option in Terraform controls the number of resource operations (creation, updating, deletion, etc.) that can be performed concurrently. By default (10), Terraform attempts to perform these operations in parallel to improve efficiency and reduce the time it takes to apply changes. Parallel operations in Terraform can potentially cause errors when the underlying API is slow and unable to handle the requests.
+
+Terraform destroy is used to tear down or destroy the resources that were created or managed using a Terraform configuration. When you run terraform destroy, Terraform identifies the resources defined in your configuration and takes the necessary actions to remove all managed resources in the Terraform state file.
+
+```sh
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn>terraform destroy
+
+data.utils_yaml_merge.model: Reading...
+data.utils_yaml_merge.model: Read complete after 0s [id=9f71c787c903954d0aedfaafb0496dd26ba1cf33]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are
+indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+<snip>
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l2_svi["LEAF-2/10"] will be destroyed
+  - resource "iosxe_interface_vlan" "l2_svi" {
+      - autostate         = false -> null
+      - device            = "LEAF-2" -> null
+      - id                = "Cisco-IOS-XE-native:native/interface/Vlan=10" -> null
+      - ipv4_address      = "10.10.10.1" -> null
+      - ipv4_address_mask = "255.255.255.0" -> null
+      - name              = 10 -> null
+      - vrf_forwarding    = "GREEN" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1000"] will be destroyed
+  - resource "iosxe_interface_vlan" "l3_core_svi" {
+      - autostate      = false -> null
+      - device         = "LEAF-1" -> null
+      - id             = "Cisco-IOS-XE-native:native/interface/Vlan=1000" -> null
+      - name           = 1000 -> null
+      - unnumbered     = "Loopback1" -> null
+      - vrf_forwarding = "GREEN" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-1/1010"] will be destroyed
+  - resource "iosxe_interface_vlan" "l3_core_svi" {
+      - autostate      = false -> null
+      - device         = "LEAF-1" -> null
+      - id             = "Cisco-IOS-XE-native:native/interface/Vlan=1010" -> null
+      - name           = 1010 -> null
+      - unnumbered     = "Loopback1" -> null
+      - vrf_forwarding = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1000"] will be destroyed
+  - resource "iosxe_interface_vlan" "l3_core_svi" {
+      - autostate      = false -> null
+      - device         = "LEAF-2" -> null
+      - id             = "Cisco-IOS-XE-native:native/interface/Vlan=1000" -> null
+      - name           = 1000 -> null
+      - unnumbered     = "Loopback1" -> null
+      - vrf_forwarding = "GREEN" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_interface_vlan.l3_core_svi["LEAF-2/1010"] will be destroyed
+  - resource "iosxe_interface_vlan" "l3_core_svi" {
+      - autostate      = false -> null
+      - device         = "LEAF-2" -> null
+      - id             = "Cisco-IOS-XE-native:native/interface/Vlan=1010" -> null
+      - name           = 1010 -> null
+      - unnumbered     = "Loopback1" -> null
+      - vrf_forwarding = "BLUE" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/10"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-1" -> null
+      - evpn_instance     = 10 -> null
+      - evpn_instance_vni = 10010 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10" -> null
+      - vlan_id           = 10 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/101"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-1" -> null
+      - evpn_instance     = 101 -> null
+      - evpn_instance_vni = 10101 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101" -> null
+      - vlan_id           = 101 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-1/102"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-1" -> null
+      - evpn_instance     = 102 -> null
+      - evpn_instance_vni = 10102 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102" -> null
+      - vlan_id           = 102 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/10"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-2" -> null
+      - evpn_instance     = 10 -> null
+      - evpn_instance_vni = 10010 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=10" -> null
+      - vlan_id           = 10 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/101"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-2" -> null
+      - evpn_instance     = 101 -> null
+      - evpn_instance_vni = 10101 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=101" -> null
+      - vlan_id           = 101 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l2_vlan_configuration["LEAF-2/102"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
+      - device            = "LEAF-2" -> null
+      - evpn_instance     = 102 -> null
+      - evpn_instance_vni = 10102 -> null
+      - id                = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=102" -> null
+      - vlan_id           = 102 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1000"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
+      - device  = "LEAF-1" -> null
+      - id      = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000" -> null
+      - vlan_id = 1000 -> null
+      - vni     = 11000 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-1/1010"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
+      - device  = "LEAF-1" -> null
+      - id      = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010" -> null
+      - vlan_id = 1010 -> null
+      - vni     = 11010 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1000"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
+      - device  = "LEAF-2" -> null
+      - id      = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1000" -> null
+      - vlan_id = 1000 -> null
+      - vni     = 11000 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vlan_configuration.l3_vlan_configuration["LEAF-2/1010"] will be destroyed
+  - resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
+      - device  = "LEAF-2" -> null
+      - id      = "Cisco-IOS-XE-native:native/vlan/Cisco-IOS-XE-vlan:configuration=1010" -> null
+      - vlan_id = 1010 -> null
+      - vni     = 11010 -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1000"] will be destroyed
+  - resource "iosxe_vrf" "vrf" {
+      - address_family_ipv4                = true -> null
+      - address_family_ipv6                = true -> null
+      - device                             = "LEAF-1" -> null
+      - id                                 = "Cisco-IOS-XE-native:native/vrf/definition=GREEN" -> null
+      - ipv4_route_target_export           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - name                               = "GREEN" -> null
+      - rd                                 = "65000:1000" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-1/1010"] will be destroyed
+  - resource "iosxe_vrf" "vrf" {
+      - address_family_ipv4                = true -> null
+      - address_family_ipv6                = true -> null
+      - device                             = "LEAF-1" -> null
+      - id                                 = "Cisco-IOS-XE-native:native/vrf/definition=BLUE" -> null
+      - ipv4_route_target_export           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - name                               = "BLUE" -> null
+      - rd                                 = "65000:1010" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1000"] will be destroyed
+  - resource "iosxe_vrf" "vrf" {
+      - address_family_ipv4                = true -> null
+      - address_family_ipv6                = true -> null
+      - device                             = "LEAF-2" -> null
+      - id                                 = "Cisco-IOS-XE-native:native/vrf/definition=GREEN" -> null
+      - ipv4_route_target_export           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import           = [
+          - {
+              - value = "65000:1000" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1000" -> null
+            },
+        ] -> null
+      - name                               = "GREEN" -> null
+      - rd                                 = "65000:1000" -> null
+    }
+
+  # module.iosxe_evpn_overlay.iosxe_vrf.vrf["LEAF-2/1010"] will be destroyed
+  - resource "iosxe_vrf" "vrf" {
+      - address_family_ipv4                = true -> null
+      - address_family_ipv6                = true -> null
+      - device                             = "LEAF-2" -> null
+      - id                                 = "Cisco-IOS-XE-native:native/vrf/definition=BLUE" -> null
+      - ipv4_route_target_export           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv4_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_export_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import           = [
+          - {
+              - value = "65000:1010" -> null
+            },
+        ] -> null
+      - ipv6_route_target_import_stitching = [
+          - {
+              - stitching = true -> null
+              - value     = "65000:1010" -> null
+            },
+        ] -> null
+      - name                               = "BLUE" -> null
+      - rd                                 = "65000:1010" -> null
+    }
+
+Plan: 0 to add, 0 to change, 92 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+<snip>
+
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["SPINE-1"]: Destruction complete after 0s
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Destroying... [id=Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-bgp:bgp=65000]
+module.iosxe_evpn_overlay.iosxe_bgp.bgp["LEAF-2"]: Destruction complete after 0s
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-2"]: Destruction complete after 1s
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Loopback=1]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.vtep_loopback["LEAF-1"]: Destruction complete after 0s
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["SPINE-1"]: Destruction complete after 1s
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-2"]: Destruction complete after 0s
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Destroying... [id=Cisco-IOS-XE-native:native/interface/Loopback=0]
+module.iosxe_evpn_ospf_underlay.iosxe_interface_loopback.loopback["LEAF-1"]: Destruction complete after 1s
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Destroying... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-1"]: Destruction complete after 0s
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Destroying... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["LEAF-2"]: Destruction complete after 1s
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Destroying... [id=Cisco-IOS-XE-native:native]
+module.iosxe_evpn_ospf_underlay.iosxe_system.system["SPINE-1"]: Destruction complete after 0s
+
+Destroy complete! Resources: 92 destroyed.
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> 
+```
+
+Confirm that you want to proceed by removing these resources (network configuration), by typing yes
+
+```
+Destroy complete! Resources: 92 destroyed.
+```
+
+You’ve now successfully deleted all your BGP EVPN VXLAN network configuration that was deployed with Terraform on your Catalyst 9000 Switches running IOS-XE.
 
 
 <br></br>
