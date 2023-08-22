@@ -37,7 +37,6 @@ Import existing infrastructure into Terraform's management.
 - Validate your configuration with terraform validate to catch syntax and semantic errors.
 - Mark a resource as tainted with terraform taint to force it to be recreated during the next apply.
 - List resources managed by Terraform using terraform state list.
-- Generate a visual representation of your infrastructure with terraform graph.
 
 <br>
 
@@ -1214,26 +1213,150 @@ import {
 }
 ```
 
-1. Create new `import.tf` file with following content:
+This is experimental feature and it doesn't work with Cisco IOSXE provider, but it should work as follows:
+
+1. Create new file import.tf and paste following code to import Loopback102 interface:
 
 ```ps
 import {
-  id = ""
-  to = ""
+    id = "Cisco-IOS-XE-native:native/interface/Loopback=102"
+    to = iosxe_interface_loopback.loopback_interface102
 }
 ```
 
+2. Run command `terraform plan -generate-config-out=generated.tf` which would create generated.tf file with imported config:
 
-<b>4. Import Existing Infrastructure:</b>
-- Understand the concept of config-driven import and how to map existing resources to Terraform configurations.
+```ps
+# __generated__ by Terraform
+# Please review these resources and move them into your main configuration files.
 
-<b>5. Terraform CLI commands:</b>
-- Use terraform fmt to format your configuration files for consistency.
-- Validate your configuration with terraform validate to catch syntax and semantic errors.
-- Mark a resource as tainted with terraform taint to force it to be recreated during the next apply.
-- Generate a visual representation of your infrastructure with terraform graph.
+# __generated__ by Terraform
+resource "iosxe_interface_loopback" "loopback_interface102" {
+  delete_mode                = null
+  description                = "Created Manually"
+  device                     = "LEAF-1"
+  ip_access_group_in         = null
+  ip_access_group_in_enable  = null
+  ip_access_group_out        = null
+  ip_access_group_out_enable = null
+  ip_proxy_arp               = null
+  ip_redirects               = null
+  ipv4_address               = "192.168.1.102"
+  ipv4_address_mask          = "255.255.255.255"
+  name                       = 102
+  shutdown                   = null
+  unreachables               = null
+  vrf_forwarding             = null
+}
+```
 
-terraform plan -generate-config-out=generated.tf
+Note. This config-driven import is not workig in IOSXE provider so if you try run this step you will get an error: 
+
+```ps
+ Error: Missing Configuration for Required Attribute
+│   with iosxe_interface_loopback.loopback_interface102,
+│   (source code not available)
+│
+│ Must set a configuration value for the name attribute as the provider has marked it as required.
+│
+│ Refer to the provider documentation or contact the provider developers for additional information about configurable attributes that  
+│ are required.
+```
+
+and this `generated.tf` file would have all fields = null
+
+3. Run `terraform refresh` and `terraform plan`
+
+<br>
+
+## 8. Terraform CLI commands
+
+### Format your code
+When crafting Terraform code, maintaining clean and organized configurations is essential for readability, collaboration, and ensuring accurate provisioning of infrastructure. However, as your Terraform codebase grows and involves numerous resource attributes, variables, and complex data structures, managing consistent formatting becomes challenging. Differing indentation levels and formatting inconsistencies can lead to code that's difficult to read, understand, and maintain.
+
+This is where Terraform's `terraform fmt` command comes to the rescue. The terraform fmt command is a powerful tool designed to automatically format your Terraform code according to a standardized style. By applying consistent indentation, line breaks, and spacing, terraform fmt ensures that your code remains coherent and adheres to best practices, regardless of its complexity.
+
+Let's take code from main.tf and change formatting from:
+
+```ps
+provider "iosxe" {
+  username = var.credentials.username
+  password = var.credentials.password
+  devices  = var.devices
+}
+
+resource "iosxe_interface_loopback" "loopback_interface" {
+  for_each = { for device in var.devices : device.name => split("-", device.name)[1] }
+
+  name              = var.loopback_interface_number
+  description       = "Created by Terraform"
+  device            = each.key
+  ipv4_address      = "192.168.${each.value}.${var.loopback_interface_number}"
+  ipv4_address_mask = "255.255.255.255"
+}
+```
+
+to:
+
+```ps
+provider "iosxe" {
+  username = var.credentials.username
+  password = var.credentials.password
+  devices  = var.devices
+}
+
+resource "iosxe_interface_loopback" "loopback_interface" {
+  for_each = { for device in var.devices : device.name => split("-", device.name)[1] }
+
+  name = var.loopback_interface_number
+    description  = "Created by Terraform"
+       device  = each.key
+  ipv4_address      = "192.168.${each.value}.${var.loopback_interface_number}"
+ipv4_address_mask = "255.255.255.255"
+}
+```
+
+This code will work with Terraform and if you run `terrraform apply` it will apply configuration correctly, but as you can see this code is messy and not formatted correctly.
+
+We can easily fix this by running `terraform fmt` command:
+
+```ps
+
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface> terraform fmt
+main.tf
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface>
+```
+
+![terraform_26](images/terraform_26.png)
+
+After command is succesfully applied you can see that it returned name of file where formatted was done `main.tf` and content of file is formatted according to standard.
+
+### Validate your configuration
+
+The `terraform validate` command is a Terraform CLI command used to check the syntax and validity of your Terraform configuration files without actually creating or modifying any resources. It helps you identify issues, errors, and potential problems in your configuration before applying it, reducing the risk of errors during the deployment process.
+
+Let's modify `main.tf` file again by making intentional syntax error. In line nr 4 put additional `=` sign:
+
+![terraform_28](images/terraform_28.png)
+
+And now run `terraform validate` command:
+
+```ps
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface> terraform validate
+╷
+│ Error: Argument or block definition required
+│
+│   on main.tf line 4, in provider "iosxe":
+│    4:   devices  == var.devices
+│
+│ An argument or block definition is required here. To set an argument, use the equals sign "=" to introduce the argument value.        
+╵
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface>  
+```
+
+![terraform_27](images/terraform_27.png)
+
+Running `terraform validate` is a quick way to catch simple syntax errors and potential issues in your Terraform code.
 
 <br></br>
 
