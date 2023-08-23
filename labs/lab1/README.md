@@ -30,12 +30,10 @@ Import existing infrastructure into Terraform's management.
 
 <b>4. Import Existing Infrastructure:</b>
 - Learn how to import existing infrastructure into Terraform using terraform import.
-- Understand the concept of config-driven import and how to map existing resources to Terraform configurations.
 
 <b>5. Terraform CLI commands:</b>
 - Use terraform fmt to format your configuration files for consistency.
 - Validate your configuration with terraform validate to catch syntax and semantic errors.
-- Mark a resource as tainted with terraform taint to force it to be recreated during the next apply.
 - List resources managed by Terraform using terraform state list.
 
 <br>
@@ -1227,72 +1225,7 @@ Now let's run `show ip int brief` command via Putty on c9k-leaf1 device:
 ![terraform_25](images/terraform_25.png)
 
 <br>
-Terraform import allows to import resources manually. We imported only one loopback interface and we had to add full resource block configuration for this one loopback interface. Imagine you have hundreds of resources to be manually added.
-
-Terraform 1.5 provides automated code generation for imported resources, significantly decreasing the time needed for writing code that matches the imported resources.
-
-This feature is called config-driven import and it only requires import block with two parameters: ID of the resource to import and the address for the new resource block.
-
-```ps
-import {
-  id = ""
-  to = ""
-}
-```
-
-This is experimental feature and it doesn't work with Cisco IOSXE provider, but it should work as follows:
-
-1. Create new file import.tf and paste following code to import Loopback102 interface:
-
-```ps
-import {
-    id = "Cisco-IOS-XE-native:native/interface/Loopback=102"
-    to = iosxe_interface_loopback.loopback_interface102
-}
-```
-
-2. Run command `terraform plan --generate-config-out=generated.tf` which would create generated.tf file with imported config:
-
-```ps
-# __generated__ by Terraform
-# Please review these resources and move them into your main configuration files.
-
-# __generated__ by Terraform
-resource "iosxe_interface_loopback" "loopback_interface102" {
-  delete_mode                = null
-  description                = "Created Manually"
-  device                     = "LEAF-1"
-  ip_access_group_in         = null
-  ip_access_group_in_enable  = null
-  ip_access_group_out        = null
-  ip_access_group_out_enable = null
-  ip_proxy_arp               = null
-  ip_redirects               = null
-  ipv4_address               = "192.168.1.102"
-  ipv4_address_mask          = "255.255.255.255"
-  name                       = 102
-  shutdown                   = null
-  unreachables               = null
-  vrf_forwarding             = null
-}
-```
-
-Note. This config-driven import is not workig in IOSXE provider so if you try run this step you will get an error: 
-
-```ps
- Error: Missing Configuration for Required Attribute
-│   with iosxe_interface_loopback.loopback_interface102,
-│   (source code not available)
-│
-│ Must set a configuration value for the name attribute as the provider has marked it as required.
-│
-│ Refer to the provider documentation or contact the provider developers for additional information about configurable attributes that  
-│ are required.
-```
-
-and this `generated.tf` file would have all fields = null
-
-3. Run `terraform refresh` and `terraform plan`
+Terraform import allows to import resources manually. We imported only one loopback interface and we had to add full resource block configuration for this one loopback interface. 
 
 <br>
 
