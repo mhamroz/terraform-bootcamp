@@ -479,7 +479,9 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\intro>
 
 ## 5. Create new VLANs on C9000v switch
 
-Let's now interact with c9k-spine switch and configure 2 new vlans: 51 and 52
+Prior to moving forward, it's important to be aware that if you encounter any challenges or wish to review the ultimate solution after completing this section, you can click [here](./solution_intro/main.tf) to examine the expected appearance of the "main.tf" file.
+
+Let's now interact with c9k-spine switch and configure 2 new vlans: 51 and 52.
 
 Before we start let's remove output configuration from previous step.
 
@@ -724,9 +726,7 @@ In order to create files, right click on ``` iosxe-loopback-interface ``` in Vis
 
 ![terraform_40](images/terraform_40.png)  
 
-
-
-
+Prior to moving forward, it's important to be aware that if you encounter any challenges or wish to review the ultimate solution after completing this section, you can click [here](./solution_loopback/) to examine how the above mentioned files' content is expected to look like.
 <br>
 
 Once files are created, you should see them the following way:
