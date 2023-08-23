@@ -497,7 +497,7 @@ resource "iosxe_vlan" "vlan52" {
 }
 ```
 
-paste this config into `main.tf` configuration file:
+paste this config into `main.tf` configuration file (please do not remove any code blocks which were added before in the ``` main.tf ``` file):
 
 ![terraform_17](images/terraform_17.png)
 
@@ -539,9 +539,9 @@ Note: You didn't use the -out option to save this plan, so Terraform can't guara
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\intro>  
 ```
 
-In the summary terraform will flag the changes which will be executed to existing infrastructure with `terraform apply` command. 
+To sum it up, terraform will flag the changes which will be executed to existing infrastructure with `terraform apply` command. 
 
-You can see that 2 new resources "iosxe_vlan" "vlan51" and "iosxe_vlan" "vlan51" on C9k device will be created.
+You can see that 2 new resources "iosxe_vlan" "vlan51" and "iosxe_vlan" "vlan52" on C9k device will be created.
 
 Let's run `terraform apply` command now. Terraform will ask to confirm changes, you can do this by typing `yes`:
 
@@ -670,7 +670,7 @@ Putting all code in `main.tf` is a good idea when you are getting started or wri
 - `variables.tf` - contains declarations of variables used in main.tf
 - `outputs.tf` - contains outputs from the resources created in main.tf
 - `versions.tf` - contains version requirements for Terraform and providers
-- `terraform.tfvars` - containse variable values that are declared inf variables.tf file
+- `terraform.tfvars` - contains variable values that are declared inf variables.tf file
 
 Let's create Loopback interfaces on 2 leaf switches using file stucture mentined above and following details:
 
@@ -706,7 +706,7 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-in
 
 ### 2. Initialize your configuration:
 
-Create the following files in your working directory:
+Create the following files in your ``` iosxe-loopback-interface ``` directory:
 
 - main.tf
 - variables.tf
@@ -714,7 +714,16 @@ Create the following files in your working directory:
 - versions.tf
 - terraform.tfvars
 
+In order to create files, right click on ``` iosxe-loopback-interface ``` in Visual Studio code and select ``` New File ``` as visible on screenshow below:
+
+![terraform_40](images/terraform_40.png)  
+
+
+
+
 <br>
+
+Once files are created, you should see them the following way:
 
 ![terraform_22](images/terraform_22.png)
 
