@@ -280,7 +280,11 @@ Navigate to your terraform-iac project, click and expand Clone button and copy <
 
 ```http://198.18.133.252/root/terraform-iac.git```
 
-Open Windows Command prompt and clone terraform-iac empty repo using git clone command:
+Click on `Windows CMD prompt` icon on Workstation Desktop
+
+![terraform_1](images/terraform_1.png)
+
+and clone terraform-iac empty repo using git clone command:
 
 `git clone http://198.18.133.252/root/terraform-iac.git`
 
@@ -288,7 +292,7 @@ You wil be asked to enter credentials for your Gitlab instance. Use root as user
 
 
 ```
-C:\Users\Administrator>git clone http://198.18.133.252/root/terraform-iac.git
+C:\Users\Administrator\Desktop>git clone http://198.18.133.252/root/terraform-iac.git
 Cloning into 'terraform-iac'...
 remote: Enumerating objects: 3, done.
 remote: Counting objects: 100% (3/3), done.
@@ -297,6 +301,24 @@ remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
 Receiving objects: 100% (3/3), done.
 
 ```
+
+After cloning the repository
+
+After cloning the repository, open the repository folder on your desktop. Right-click on the `terraform-bootcamp` folder and select `Open with Code`
+
+![terraform_4](images/terraform_4.png)
+
+
+Open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Terminal`
+
+![terraform_5](images/terraform_5.png)
+
+![terraform_6](images/terraform_6.png)
+
+Navigate to labs/lab1/intro folder in terminal by executing command: `cd labs/lab1/intro`
+
+![terraform_10](images/terraform_10.png)
+
 
 Open Visual Studio Code Editor and navigate to File -> Open Folder and choose location of your cloned repository:
 

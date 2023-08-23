@@ -91,6 +91,6 @@ To access Windows Workstation Click on workstation icon, expand Remote Access an
 
 ![dcloud_12](images/dcloud_12.png)
 
-New TAB should open and you should see Windows Desktop
+A new tab will open, and you should see Windows desktop
 
 ![dcloud_13](images/dcloud_13.png)

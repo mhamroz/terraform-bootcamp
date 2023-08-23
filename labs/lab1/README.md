@@ -64,6 +64,14 @@ By the end of this lab, you will have the skills and confidence to leverage Terr
 
 ## 1. Upgrade/Install Terraform to latest version
 
+To access Windows Workstation Click on workstation icon, expand Remote Access and click `Web RDP` button:
+
+![dcloud_12](images/dcloud_12.png)
+
+A new tab will open, and you should see Windows desktop
+
+![dcloud_13](images/dcloud_13.png)
+
 On Windows Workstation terraform is already installed. If you need to install fresh installation of Terraform you can follow Instruction from hashicorp.com website: [Install Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 
 To upgrade Terraform to latest version (v1.5.5) open Windows Command prompt and run following command: `choco install terraform --version=1.5.5 --force`
