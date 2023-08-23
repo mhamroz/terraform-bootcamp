@@ -1251,7 +1251,7 @@ import {
 }
 ```
 
-2. Run command `terraform plan -generate-config-out=generated.tf` which would create generated.tf file with imported config:
+2. Run command `terraform plan --generate-config-out=generated.tf` which would create generated.tf file with imported config:
 
 ```ps
 # __generated__ by Terraform
