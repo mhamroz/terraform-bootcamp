@@ -255,14 +255,7 @@ Terraform Provider Documentation includes:
 
 ## 4. Use IOS-XE Terraform Provider to read data from C9000v switch
 
-To read data from switch you need to provide credentials for device to Terrraform. This can be done either by environment variables:
-
-```sh
-export IOSXE_USERNAME=developer
-export IOSXE_PASSWORD=C1sco12345
-```
-
-Or by updating the provider configuration in main.tf:
+To read data from switch you need to provide credentials for device to Terrraform. This can be done either by updating the provider configuration in `main.tf` file:
 
 ```sh
 provider "iosxe" {
@@ -272,7 +265,22 @@ provider "iosxe" {
 }
 ```
 
-We will be updating main.tf file to provide credentials for C9k-spine device in CML topology:
+Or by adding environment variables:
+
+<b>(Windows)</b>
+```sh
+$env:IOSXE_USERNAME="developer"
+$env:IOSXE_PASSWORD="C1sco12345"
+```
+
+<b>(Linux/Mac)</b>
+```sh
+export IOSXE_USERNAME=developer
+export IOSXE_PASSWORD=C1sco12345
+```
+
+
+We will be updating `main.tf` file to provide credentials for C9k-spine device in CML topology:
 
 ![terraform_9](images/terraform_9.png)
 

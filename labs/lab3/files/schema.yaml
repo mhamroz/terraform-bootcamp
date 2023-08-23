@@ -1,0 +1,56 @@
+---
+fabric: include('fabric', required=False)
+---
+fabric:
+  inventory: include('inventory', required=False)
+  underlay: include('underlay', required=False)
+  overlay: include('overlay', required=False)
+
+inventory:
+  spines: list(include('devices'), required=False)
+  leafs: list(include('devices'), required=False)
+
+overlay:
+  bgp_asn: int(min=1, max=65534)
+  l3_services: list(include('l3_services'), required=False)
+  l2_services: list(include('l2_services'), required=False)
+
+underlay:
+  loopbacks: list(include('loopbacks'), required=False)
+  vtep_loopbacks: list(include('vtep_loopbacks'), required=False)
+  loopback_id: int(min=0, max=50)
+  pim_loopback_id: int(min=100, max=200)
+
+  fabric_interface_type: enum('GigabitEthernet', 'FastEthernet', 'Ethernet')
+  leaf_fabric_interface_prefix: regex('^\d+\/\d+\/$')
+  leaf_fabric_interface_offset: int(min=1, max=8)
+  spine_fabric_interface_prefix: regex('^\d+\/\d+\/$')
+  spine_fabric_interface_offset: int(min=1, max=8)
+
+  anycast_rp_ipv4_address: ip(version=4)
+
+devices:
+  name: str(min=1, max=64)
+  url: regex('^https:\/\/\d+\.\d+\.\d+\.\d+$')
+
+l3_services:
+  name: str(min=1, max=64)
+  id: int(min=1000, max=2000)
+
+l2_services:
+  name: str(min=1, max=64)
+  id: int(min=1, max=2000)
+  ipv4_multicast_group: regex('^(22[4-9]|23[0-9])\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',required=False)
+  ip_learning: bool(required=False)
+  l3_service: str(min=1, max=64, required=False)
+  ipv4_address: ip(version=4,required=False)
+  ipv4_mask: ip(version=4,required=False)
+  re_originate_route_type5: bool(required=False)
+
+loopbacks:
+  device: str(min=1, max=64)
+  ipv4_address: ip(version=4,required=False)
+
+vtep_loopbacks:
+  device: str(min=1, max=64)
+  ipv4_address: ip(version=4,required=False)
