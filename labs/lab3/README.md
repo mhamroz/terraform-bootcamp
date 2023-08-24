@@ -246,7 +246,7 @@ Verify that terraform was installed succesfully:
 
 ```
 root@e0303ca291b2:/# terraform --version
-Terraform v1.5.5
+Terraform v1.5.6
 on linux_amd64
 ```
 
