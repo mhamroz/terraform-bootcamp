@@ -255,10 +255,10 @@ Open main.tf file in Visual Studio Code and paste following 2 lines after line 2
 
 Run `terraform plan` command to preview changes that Terraform plans to make to your infrastructure.
 
-We will run terrafrom plan command with `-out=plan.tfplan` flag, which will save execution plan to file. In the next section we will use this file as input when executing `terraform apply` command.
+We will run terrafrom plan command with `--out=plan.tfplan` flag, which will save execution plan to file. In the next section we will use this file as input when executing `terraform apply` command.
 
 ```sh
-PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform plan -out=plan.tfplan
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> terraform plan --out=plan.tfplan
 data.utils_yaml_merge.model: Reading...
 data.utils_yaml_merge.model: Read complete after 0s [id=1ea2255d974f47fcc6f220962b2c2762e20fb8f1]
 
@@ -651,6 +651,13 @@ Use the following details to log in to the devices:
 
 ![cml_1](images/cml_1.png)
 
+- Login with credentials:
+
+| username / password | 
+| --- |
+| guest/C1sco12345 | 
+ 
+
 - Enter lab and locate 2 ubuntu machines (ubuntu-1 and ubuntu-2)
 
 - Click on ubuntu-1 machine and open Console (if you are asked for username and password type: cisco / cisco)
@@ -661,8 +668,9 @@ Use the following details to log in to the devices:
 
 ![cml_3](images/cml_3.png)
 
-`Note` ubuntu-2 machine might be misconfigured in this lab and ping might be unsuccessful. To check that open Console for ubuntu-2 machine and execute command: `ip addr show ens3`. If ip address is not matching 10.10.10.11 then change it using command:
-`ip addr add 10.10.10.11/255.255.255.0 dev ens3`
+`Note` ubuntu-2 machine might be misconfigured in this lab and ping might be unsuccessful. To check that open Console for ubuntu-2 machine and execute command: `ip addr show ens3`. If ip address is not matching 10.10.10.11 then change it using the following commands:
+- ` sudo ip addr del 10.10.11.10/24 dev ens3 ` -  release the current IP address assigned to the ens3 interface. Please be aware that the IP address "10.10.11.10/24" provided here is just an example. If you possess a different IP address while checking ``` ip -br a ```, kindly indicate your own.
+- ` sudo ip addr add 10.10.10.11/255.255.255.0 dev ens3 ` - assign the new IP address.
 
 <br>
 
