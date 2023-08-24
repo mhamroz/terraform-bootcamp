@@ -455,6 +455,8 @@ Add files to git and push to Gitlab. To do this run following commands:
 
 Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
 
+test2
+
 <br></br>
 
 ---
