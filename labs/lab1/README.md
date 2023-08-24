@@ -505,7 +505,7 @@ resource "iosxe_vlan" "vlan52" {
 }
 ```
 
-paste this config into `main.tf` configuration file (please do not remove any code blocks which were added before in the ``` main.tf ``` file):
+paste this config into `main.tf` configuration file:
 
 ![terraform_17](images/terraform_17.png)
 
