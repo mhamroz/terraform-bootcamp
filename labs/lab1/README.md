@@ -215,7 +215,7 @@ The lock file includes details such as the provider name and version constraint.
 
 ## 3. How to use IOS-XE Terraform Provider
 
-To learn how to confiugra and interact with Terraform provider, you can use provider documentation ont the Terraform Registry.
+To learn how to confiugra and interact with Terraform provider, you can use provider documentation on the Terraform Registry.
 
 To check documentation for Cisco IOS-XE Terraform Provider open following link in your webbrowser:
 
@@ -442,7 +442,7 @@ data_source_settings_output = {
 }
 ```
 
-After you execute `terraform apply` new terraform state file: `terraform.tfstate` file will be created to store information about resources and data objects.
+After you execute `terraform apply` new terraform state file: `terraform.tfstate` will be created to store information about resources and data objects.
 
 You can inspect content of `terraform.tfstate` file in Visual Studio Code:
 
@@ -678,7 +678,7 @@ Putting all code in `main.tf` is a good idea when you are getting started or wri
 - `variables.tf` - contains declarations of variables used in main.tf
 - `outputs.tf` - contains outputs from the resources created in main.tf
 - `versions.tf` - contains version requirements for Terraform and providers
-- `terraform.tfvars` - contains variable values that are declared inf variables.tf file
+- `terraform.tfvars` - contains variable values that are declared in variables.tf file
 
 Let's create Loopback interfaces on 2 leaf switches using file stucture mentined above and following details:
 
@@ -777,7 +777,7 @@ variable "loopback_interface_number" {
 }
 ```
 
-Variable `credentials` is object variable, which is a type of variable that can hold a complex data structure with multipler attributes or fields.
+Variable `credentials` is object variable, which is a type of variable that can hold a complex data structure with multiple attributes or fields.
 
 Variable `devices` is list of objects variable. This is a data structure that allows you to define a list of maps, where each map represents an object with a set of key-value pairs. This data structure is often used to represent a collection of similar resources or configurations that need to be created in a single block of code
 
@@ -918,7 +918,7 @@ Note: You didn't use the -out option to save this plan, so Terraform can't guara
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface> 
 ```
 
-Check if output is matching desired configuration. You should see 2 loopback interface resources (Loopback100 with ip 192.168.1.101 and mask 255.255.255.255 on LEAF-1 and Loopback100 with ip 192.168.2.101 and mask 255.255.255.255 on LEAF-2). 
+Check if output is matching desired configuration. You should see 2 loopback interface resources (Loopback101 with ip 192.168.1.101 and mask 255.255.255.255 on LEAF-1 and Loopback101 with ip 192.168.2.101 and mask 255.255.255.255 on LEAF-2). 
 
 Notice `(known after apply)` status in Changes to Output of created_loopback_interfaces. The actual values of the created loopback interface resource IDs will be known only after you apply your Terraform configuration. 
 
@@ -1048,7 +1048,7 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-in
 
 ## 7. Import Existing Infrastructure
 
- While creating resources from scratch using Terraform is a common practice, the real world often presents scenarios where existing resources need to be integrated into your IAC workflow. This is where the `terrafrom config-driven import` comes into play. Terraform config-driven import was introduce in Terraform version 1.5.
+ While creating resources from scratch using Terraform is a common practice, the real world often presents scenarios where existing resources need to be integrated into your IAC workflow. This is where the `terrafrom config-driven import` comes into play. Terraform config-driven import was introduced in Terraform version 1.5.
  
  Config-driven import is a new declarative workflow to add existing resources into Terraform state and solves the limitations of the existing import command. 
 
@@ -1155,7 +1155,7 @@ your Terraform state and will henceforth be managed by Terraform.
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface> 
 ```
 
-Import was succesfull now you can check if `resource loopback_interface102` was added terraform state file. Run `terraform state list` command:
+Import was succesfull now you can check if `resource loopback_interface102` was added to terraform state file. Run `terraform state list` command:
 
 ```ps
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-interface> terraform state list
