@@ -2,7 +2,7 @@
 
 ## Lab Overview
 
-Multiple solutions are available to implement CI/CD automation for the Terraform IaC workflows. In this lab, we will explore and implement a CI/CD pipeline for Terraform using GitLab. GitLab is like a toolbox that provides remote spots for holding our code (known as repositories), and it also takes care of automatic testing and deployments (CI/CD).
+In this lab we'll dive into using GitLab's helpful CI/CD pipeline to manage your Terraform setups for Cisco Catalyst 9000 Series Switches with BGP EVPN VXLAN configuration. Building on what you've learned about Terraform and Cisco devices in [lab2](../lab2/README.md), this lab is all about smoothly putting GitLab's CI/CD tools to work, and integrating Terraform with GitLab CI.
 
 <br>
 
@@ -351,9 +351,7 @@ You should see terrraform-iac project created successfully:
 
 <br>
 
-## 6. Configure Gitlab variables
-
-## 7. Clone and modify repository
+## 6. Clone and modify repository
 
 Navigate to your terraform-iac project, click and expand Clone button and copy <b>Clone with HTTP</b> URL:
 
@@ -418,13 +416,13 @@ Open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Termina
 
 <br>
 
-## 8. Create Gitlab CICD pipeline
-gitla
-We will be building gitlab CI pipeline using evpn terraform code from [lab2](../lab2/README.md).
+## 7. Create Gitlab CICD pipeline
+
+We will be building gitlab CI pipeline using evpn terraform code from [lab2](../lab2/evpn).
 
 The pipeline itself is defined in a file called `.gitlab-ci.yml`.
 
-The initial section of the `.gitlab-ci.yml` file includes the global configurations for the pipeline, such as variables, the designated container image, and the definition of pipeline stages.
+The initial section of the `.gitlab-ci.yml` file includes the global configurations for the pipeline, such as variables and the definition of pipeline stages.
 
 In a GitLab CI pipeline, stages represent the primary phases required in the build process. Each stage encompasses multiple individual jobs. Initially, all stages will be in a commented-out state, and we will gradually activate them as we advance through the lab exercises.
 
@@ -433,6 +431,40 @@ File `schema.yaml` is used for syntax pre-change validation of data model from `
 For syntatic and sementic validation of YAML files in data folder we will be using [iac-validate](https://github.com/netascode/iac-validate) python tool.
 
 Semantic validation is done by providing a set of rules (implemented in Python) which are then validated against the YAML data. Every rule is implemented as a Python class and should be placed in a .py file located in the --rules [path](../files/rules).
+
+<br>
+
+## 8. Configure Gitlab variables
+
+In lab 2 credentials to access spines and leaves were provided to terraform in main.tf file. In Gitlab we can use Variables.
+
+Let's remove username and password from provider configuration in main.tf:
+
+```sh
+provider "iosxe" {
+  devices  = local.devices
+}
+```
+
+keep only `devices = local.devices` under provider.
+
+
+Next, go to the `terraform-iac` repository on Gitlab and go to `Settings` and select `CI/CD`. We will add some variables to that will be used inside the `.gitlab-ci.yml` file.
+
+![gitlab_21](images/gitlab_21.png)
+
+Add the following variables:
+
+- IOSXE_PASSWORD: set this to `C1sco12345`. Click on `Mask variable`.
+- IOSXE_USERNAME: set this to `developer`.
+
+![gitlab_22](images/gitlab_22.png)
+
+![gitlab_23](images/gitlab_23.png)
+
+When finished you should see the following secrets added to your repository:
+
+![gitlab_24](images/gitlab_24.png)
 
 <br>
 
