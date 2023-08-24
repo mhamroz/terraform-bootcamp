@@ -302,13 +302,11 @@ Receiving objects: 100% (3/3), done.
 
 ```
 
-After cloning the repository
+After cloning the repository, open the repository folder on your desktop. 
 
-After cloning the repository, open the repository folder on your desktop. Right-click on the `terraform-bootcamp` folder and select `Open with Code`
+![github_15](images/github_15.png)
 
-![terraform_4](images/terraform_4.png)
-
-
+Next, open `terraform-bootcamp` repository folder cloned in lab1 [lab1](../lab1#2-clone-terraform-bootcamp-repository-to-workstation)
 Open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Terminal`
 
 ![terraform_5](images/terraform_5.png)
