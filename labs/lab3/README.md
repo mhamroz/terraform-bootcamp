@@ -15,8 +15,6 @@ Multiple solutions are available to implement CI/CD automation for the Terraform
 
 - Docker installed
 
-- `terraform` version 1.5.X installed on your local machine [Terraform](https://developer.hashicorp.com/terraform/downloads)
-
 - Access to Catalyst 9000 series switches (2x Leafs, 1xSpine)
 
 - Access to the internet
@@ -232,7 +230,7 @@ If you see green circle next to your runner, it means that you have a runner ava
 
 <br>
 
-## 4. Install Terraform on Gitlab runner
+## 4. Install Terraform and other dependencies on Gitlab runner
 
 To install terraform on Gitlab runner enter gitlab-runner container shell: `docker exec -it gitlab-runner /bin/bash` and paste following commands:
 
@@ -251,6 +249,87 @@ root@e0303ca291b2:/# terraform --version
 Terraform v1.5.5
 on linux_amd64
 ```
+
+Next, install python3-pip:
+
+`apt install python3-pip`
+
+```bash
+root@e0303ca291b2:/# apt install python3-pip
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-9 dpkg-dev fakeroot g++ g++-9 gcc gcc-9
+  gcc-9-base libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libatomic1 libbinutils
+  libc-dev-bin libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdpkg-perl libexpat1-dev libfakeroot
+  libfile-fcntllock-perl libgcc-9-dev libgomp1 libisl22 libitm1 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libpython3-dev libpython3.8 libpython3.8-dev libquadmath0 libstdc++-9-dev libtsan0 libubsan1 linux-libc-dev make
+  manpages manpages-dev patch python-pip-whl python3-dev python3-distutils python3-lib2to3 python3-pkg-resources
+  python3-setuptools python3-wheel python3.8-dev zlib1g-dev
+Suggested packages:
+  binutils-doc cpp-doc gcc-9-locales debian-keyring g++-multilib g++-9-multilib gcc-9-doc gcc-multilib autoconf
+  automake libtool flex bison gdb gcc-doc gcc-9-multilib glibc-doc bzr libstdc++-9-doc make-doc man-browser ed
+  diffutils-doc python-setuptools-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential cpp cpp-9 dpkg-dev fakeroot g++ g++-9 gcc gcc-9
+  gcc-9-base libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan5 libatomic1 libbinutils
+  libc-dev-bin libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdpkg-perl libexpat1-dev libfakeroot
+  libfile-fcntllock-perl libgcc-9-dev libgomp1 libisl22 libitm1 liblocale-gettext-perl liblsan0 libmpc3 libmpfr6
+  libpython3-dev libpython3.8 libpython3.8-dev libquadmath0 libstdc++-9-dev libtsan0 libubsan1 linux-libc-dev make
+  manpages manpages-dev patch python-pip-whl python3-dev python3-distutils python3-lib2to3 python3-pip
+  python3-pkg-resources python3-setuptools python3-wheel python3.8-dev zlib1g-dev
+0 upgraded, 59 newly installed, 0 to remove and 1 not upgraded.
+Need to get 56.2 MB of archives.
+After this operation, 241 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+```
+
+Verify that pip was installed succesfully:
+
+```bash
+root@e0303ca291b2:/# pip --version
+pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
+```
+
+Install iac-validate python tool:
+
+`pip install iac-validate
+
+```bash
+root@e0303ca291b2:/# pip install iac-validate
+Collecting iac-validate
+  Downloading iac_validate-0.2.3-py3-none-any.whl (14 kB)
+Collecting click<9.0.0,>=8.0.4
+  Downloading click-8.1.7-py3-none-any.whl (97 kB)
+     |████████████████████████████████| 97 kB 1.4 MB/s
+Collecting errorhandler<3.0.0,>=2.0.1
+  Downloading errorhandler-2.0.1-py2.py3-none-any.whl (5.5 kB)
+Collecting ruamel-yaml>0.16.10
+  Downloading ruamel.yaml-0.17.32-py3-none-any.whl (112 kB)
+     |████████████████████████████████| 112 kB 3.0 MB/s
+Collecting yamale<5.0.0,>=4.0.3
+  Downloading yamale-4.0.4-py3-none-any.whl (55 kB)
+     |████████████████████████████████| 55 kB 1.2 MB/s
+Collecting ruamel.yaml.clib>=0.2.7; platform_python_implementation == "CPython" and python_version < "3.12"
+  Downloading ruamel.yaml.clib-0.2.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl (555 kB)
+     |████████████████████████████████| 555 kB 3.3 MB/s
+Collecting pyyaml
+  Downloading PyYAML-6.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (736 kB)
+     |████████████████████████████████| 736 kB 4.8 MB/s
+Installing collected packages: click, errorhandler, ruamel.yaml.clib, ruamel-yaml, pyyaml, yamale, iac-validate
+Successfully installed click-8.1.7 errorhandler-2.0.1 iac-validate-0.2.3 pyyaml-6.0.1 ruamel-yaml ruamel.yaml.clib-0.2.7 yamale-4.0.4
+
+```
+
+Vefify that iac-validate was installed succesfully:
+
+```bash
+root@e0303ca291b2:/# iac-validate --version
+iac-validate, version 0.2.3
+```
+
+<br>
 
 ## 5. Create your first project
 
@@ -272,7 +351,9 @@ You should see terrraform-iac project created successfully:
 
 <br>
 
-## 6. Clone and modify repository
+## 6. Configure Gitlab variables
+
+## 7. Clone and modify repository
 
 Navigate to your terraform-iac project, click and expand Clone button and copy <b>Clone with HTTP</b> URL:
 
@@ -302,41 +383,80 @@ Receiving objects: 100% (3/3), done.
 
 ```
 
-After cloning the repository
+After cloning the repository, open the repository folder on your desktop. 
 
-After cloning the repository, open the repository folder on your desktop. Right-click on the `terraform-bootcamp` folder and select `Open with Code`
+![gitlab_15](images/gitlab_15.png)
 
-![terraform_4](images/terraform_4.png)
+Next, open `terraform-bootcamp` repository folder cloned in [lab1](../lab1#2-clone-terraform-bootcamp-repository-to-workstation)
 
+![gitlab_16](images/gitlab_16.png)
+
+and copy following files and folders from `terraform-bootcamp`:
+
+- labs/lab2/evpn/data 
+- labs/lab2/evpn/modules
+- labs/lab2/evpn/main.tf
+- labs/lab3/files/schema.yaml
+- labs/lab3/files/.gitlab-ci.yml
+- labs/lab3/files/rules
+
+
+to `terraform-iac` folder:
+
+![gitlab_17](images/gitlab_17.png)
+
+
+Next, open the `terraform-iac` repository folder on your desktop. Right-click on the `terraform-iac` folder and select `Open with Code`
+
+![gitlab_18](images/gitlab_18.png)
 
 Open Terminal in Visual Studio Code Editor by selecting `Terminal -> New Terminal`
 
-![terraform_5](images/terraform_5.png)
+![gitlab_19](images/gitlab_19.png)
 
-![terraform_6](images/terraform_6.png)
+![gitlab_20](images/gitlab_20.png)
 
-Navigate to labs/lab1/intro folder in terminal by executing command: `cd labs/lab1/intro`
-
-![terraform_10](images/terraform_10.png)
-
-
-Open Visual Studio Code Editor and navigate to File -> Open Folder and choose location of your cloned repository:
-
-![gitlab_13](images/gitlab_13.png)
-
-Click Select Folder and Yes, I trust the authors option on next screen:
-
-![gitlab_14](images/gitlab_14.png)
-
-In repository you only have README.md file, now you need to copy files from terraform-bootcamp repository from labs/lab3/scripts folder into your 
 <br>
 
-## 7. Create Gitlab CICD pipeline
+## 8. Create Gitlab CICD pipeline
+gitla
+We will be building gitlab CI pipeline using evpn terraform code from [lab2](../lab2/README.md).
 
-                                                                                                                                              
+The pipeline itself is defined in a file called `.gitlab-ci.yml`.
+
+The initial section of the `.gitlab-ci.yml` file includes the global configurations for the pipeline, such as variables, the designated container image, and the definition of pipeline stages.
+
+In a GitLab CI pipeline, stages represent the primary phases required in the build process. Each stage encompasses multiple individual jobs. Initially, all stages will be in a commented-out state, and we will gradually activate them as we advance through the lab exercises.
+
+File `schema.yaml` is used for syntax pre-change validation of data model from `data` directory. Syntax validation ensures that the input data is syntactically correct, which is verified by Yamale and a corresponding schema. The [schema](../files/schema.yaml) specifies the expected structure, input value types (String, Enum, IP, etc.) and additional constraints (eg. value ranges, regexes, etc.).
+
+For syntatic and sementic validation of YAML files in data folder we will be using [iac-validate](https://github.com/netascode/iac-validate) python tool.
+
+Semantic validation is done by providing a set of rules (implemented in Python) which are then validated against the YAML data. Every rule is implemented as a Python class and should be placed in a .py file located in the --rules [path](../files/rules).
+
+<br>
+
+## 9. Gitlab CI Pipeline - Validate Stage
  
+The `Validate` stage is perform syntactic and semantic validations on your inventory.
+
+Start by enabling the validate stage in the `stages` section of the pipeline definition.
+
+```yaml
+stages:
+  - validate
+```
+
+Add files to git and push to Gitlab. To do this run following commands:
+
+```ps
+
+```
+
+Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
+
 <br></br>
 
 ---
 
-### Congratulations on completing the Troubleshoot IOx Applications lab! You have taken an important step in learning how to solve application and platform related issues. You resolved a code-based failure on an application deployed on CSR1000v router using the application console and application log files. You identify resource contention that prevents applications from activating on an CSR1000v.
+### Great job! You've successfully implemented Terraform IAC using GitLab CI. You're now equipped to tackle more advanced coding tasks with confidence. Keep up the excellent work and keep exploring new horizons. Well done!

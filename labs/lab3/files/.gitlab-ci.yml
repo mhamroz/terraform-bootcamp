@@ -7,7 +7,7 @@ variables:
 
   # Needed in order for after_script to catch the job status successfully
   # see https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27693 for details
-  FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: "true"
+  #FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: "true"
 
 # These before and after scripts are automatically used by every job not having a before/after script defined
 default:
@@ -19,11 +19,11 @@ default:
       fi
 
 stages:
-  - validate
-  - plan
-  - apply
-  - test
-  - notify
+  #- validate
+  #- plan
+  #- apply
+  #- test
+  #- notify
 
 # Template for the validate jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
 .validate: &validate

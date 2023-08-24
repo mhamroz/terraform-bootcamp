@@ -30,7 +30,7 @@ data "utils_yaml_merge" "model" {
 }
 
 module "iosxe_evpn_ospf_underlay" {
-  source  = "./modules/terraform-iosxe-evpn-ospf-underlay"
+  source = "./modules/terraform-iosxe-evpn-ospf-underlay"
 
   leafs                         = local.leafs
   spines                        = local.spines
@@ -48,7 +48,7 @@ module "iosxe_evpn_ospf_underlay" {
 }
 
 module "iosxe_evpn_overlay" {
-  source  = "./modules/terraform-iosxe-evpn-overlay"
+  source = "./modules/terraform-iosxe-evpn-overlay"
 
   leafs                = local.leafs
   spines               = local.spines
