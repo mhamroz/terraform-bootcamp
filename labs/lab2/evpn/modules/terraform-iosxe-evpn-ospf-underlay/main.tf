@@ -7,7 +7,7 @@ locals {
 resource "iosxe_system" "system" {
   for_each = local.all
 
-  device                   = each.value
+  device = each.value
   #hostname                 = each.value
   ip_routing               = true
   ipv6_unicast_routing     = true
