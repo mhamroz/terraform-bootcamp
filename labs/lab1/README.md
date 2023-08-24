@@ -215,7 +215,7 @@ The lock file includes details such as the provider name and version constraint.
 
 ## 3. How to use IOS-XE Terraform Provider
 
-To learn how to confiugra and interact with Terraform provider, you can use provider documentation on the Terraform Registry.
+To learn how to confiugr and interact with Terraform provider, you can use provider documentation on the Terraform Registry.
 
 To check documentation for Cisco IOS-XE Terraform Provider open following link in your webbrowser:
 
@@ -983,7 +983,14 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-in
 
 ### 10. Verify Loopback Interfaces:
 
-After the terraform apply command completes, login to both switches (c9k-leaf1 and c9k-leaf2) using Putty and verify that Loopback101 interfaces were created on both devices:
+After the terraform apply command completes, login to both switches (c9k-leaf1 and c9k-leaf2) using Putty and the following details:
+
+| Device Name | Device IP | username / password | 
+| --- | --- | --- |
+| LEAF-1 | 198.18.1.31 | developer/C1sco12345 | 
+| LEAF-2 | 198.18.1.32 | developer/C1sco12345 | 
+
+Verify that Loopback101 interfaces were created on both devices:
 
 ![terraform_23](images/terraform_23.png)
 
