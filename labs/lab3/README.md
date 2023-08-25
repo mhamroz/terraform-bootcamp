@@ -449,7 +449,7 @@ provider "iosxe" {
 keep only `devices = local.devices` under provider.
 
 
-Next, go to the `terraform-iac` repository on Gitlab and go to `Settings` and select `CI/CD`. We will add some variables to that will be used inside the `.gitlab-ci.yml` file.
+Next, navigate to `terraform-iac` repository on Gitlab and go to `Settings` and select `CI/CD`. We will add some variables to that will be used inside the `.gitlab-ci.yml` file.
 
 ![gitlab_21](images/gitlab_21.png)
 
