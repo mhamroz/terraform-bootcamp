@@ -31,7 +31,7 @@ In this lab we'll dive into using GitLab's helpful CI/CD pipeline to manage your
 
 Open terminal and pull gitlab-ce image from DockerHub:
 
-`docker pull gitlab/gitlab-ee:latest`
+`docker pull gitlab/gitlab-ce:latest`
 
 ```
 C:\Users\Administrator\Desktop>docker pull gitlab/gitlab-ce:latest
@@ -237,8 +237,11 @@ To install terraform on Gitlab runner enter gitlab-runner container shell: `dock
 
 ```
 apt update && apt install lsb-release gpg
+
 wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+
 apt update && apt install terraform
 ```
 

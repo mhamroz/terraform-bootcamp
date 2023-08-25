@@ -1,329 +1,114 @@
-variables:
-  # Disable SSL verification for git
-  GIT_SSL_NO_VERIFY: "true"
-
-  # Enable color output
-  PY_COLORS: '1'
-
-  # Needed in order for after_script to catch the job status successfully
-  # see https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27693 for details
-  #FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: "true"
-
-# These before and after scripts are automatically used by every job not having a before/after script defined
-default:
-  after_script:
-    # The pipeline_failure.txt file is used to signal if any job in the pipeline has failed
-    - >
-      if [ $CI_JOB_STATUS == 'failed' ]; then
-        echo "failed" > pipeline_failure.txt
-      fi
-
+---
 stages:
-  #- validate
-  #- plan
-  #- apply
-  #- test
-  #- notify
+  - validate
+  - plan
+  - deploy
+  - test
 
-# Template for the validate jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.validate: &validate
+variables:
+  IOSXE_USERNAME:
+    description: "Cisco IOSXE Username"
+  IOSXE_PASSWORD:
+    description: "Cisco IOSXE Password"
+
+cache:
+  key: terraform_modules_and_lock
+  paths:
+    - .terraform
+    - .terraform.lock.hcl
+
+
+validate:
   stage: validate
-  before_script:
-    - echo -e "\e[0Ksection_start:`date +%s`:before_script[collapsed=true]\r\e[0KExecuting before_script"
-    - pip install iac-validate iac-test
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script\r\e[0K"
   script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
-    - iac-validate --schema ./validation/apic_schema.yaml --rules ./validation/rules/ ./data/ |& tee validate_output.txt
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
+    - iac-validate --schema schema.yaml --rules ./rules/ ./data/ |& tee validate_output.txt
   artifacts:
     paths:
-      - pipeline_failure.txt
       - validate_output.txt
     expire_in: 30 min
     when: always
 
-validate (master branch):
-  <<: *validate
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
-
-validate (feature branch):
-  <<: *validate
-  rules:
-    - if: $CI_COMMIT_BRANCH != "master" && ( $CI_PIPELINE_SOURCE != "tag" || $CI_PIPELINE_SOURCE != "merge_request_event")
-
-validate (PR):
-  <<: *validate
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-
-# Template for the fmt jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.fmt: &fmt
+fmt:
   stage: validate
   before_script:
-    - echo -e "\e[0Ksection_start:`date +%s`:before_script[collapsed=true]\r\e[0KExecuting before_script"
-    - echo "credentials \"app.terraform.io\" { token = \"$TFC_TOKEN\" }" > ~/.terraformrc
     - terraform init
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script\r\e[0K"
   script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
     - terraform fmt -check -recursive -diff |& tee fmt_output.txt
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
   artifacts:
     paths:
-      - pipeline_failure.txt
       - fmt_output.txt
     expire_in: 30 min
     when: always
+  needs:
+    - validate
 
-fmt (master branch):
-  <<: *validate
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
-  needs: ["validate (master branch)"]
-
-fmt (feature branch):
-  <<: *validate
-  rules:
-    - if: $CI_COMMIT_BRANCH != "master" && ( $CI_PIPELINE_SOURCE != "tag" || $CI_PIPELINE_SOURCE != "merge_request_event")
-  needs: ["validate (feature branch)"]
-
-fmt (PR):
-  <<: *validate
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  needs: ["validate (PR)"]
-
-# Template for the render jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.plan: &plan
+plan:
   stage: plan
-  before_script:
-    - echo -e "\e[0Ksection_start:`date +%s`:before_script[collapsed=true]\r\e[0KExecuting before_script"
-    - echo "credentials \"app.terraform.io\" { token = \"$TFC_TOKEN\" }" > ~/.terraformrc
-    - terraform init
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script\r\e[0K"
   script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
+    - terraform init -input=false
     - terraform plan -out=plan.tfplan -input=false
     - terraform show -no-color plan.tfplan > plan.txt
     - terraform show -json plan.tfplan > plan.json
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
   artifacts:
     paths:
-      - pipeline_failure.txt
       - plan.tfplan
       - plan.txt
       - plan.json
     expire_in: 30 min
     when: always
+  needs:
+    - validate
+    - fmt
+  only:
+    - merge_requests
+    - master
 
-plan apic (master branch):
-  <<: *plan
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
-  needs: ["validate (master branch)", "fmt (master branch)"]
-
-plan apic w. bootstrap (master branch):
-  <<: *plan
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag" && $BOOTSTRAP == "true"
-  needs: ["validate (master branch)", "fmt (master branch)"]
-
-plan apic (PR):
-  <<: *plan
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  needs: ["validate (PR)", "fmt (PR)"]
-
-# Template for the deploy jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.apply: &apply
-  stage: apply
-  before_script:
-    - echo -e "\e[0Ksection_start:`date +%s`:before_script[collapsed=true]\r\e[0KExecuting before_script"
-    - echo "credentials \"app.terraform.io\" { token = \"$TFC_TOKEN\" }" > ~/.terraformrc
-    - terraform init
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script\r\e[0K"
+deploy:
+  stage: deploy
   script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
-    - terraform apply -input=false -auto-approve plan.tfplan |& tee deploy_output.txt
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
+    - terraform init -input=false
+    - terraform apply -input=false -auto-approve plan.tfplan  |& tee deploy_output.txt
   artifacts:
     paths:
       - pipeline_failure.txt
       - deploy_output.txt
     expire_in: 30 min
     when: always
-
-apply apic (master branch):
-  <<: *apply
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
   dependencies:
-    - plan apic (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic (master branch)"]
+    - plan
+  needs:
+    - plan
+  only:
+    - master
 
-apply apic w. bootstrap (master branch):
-  <<: *apply
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag" && $BOOTSTRAP == "true"
-  dependencies:
-    - plan apic w. bootstrap (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic w. bootstrap (master branch)"]
+#test-integration:
+#  stage: test
+#  script:
+#   - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -f ./tests/filters -o ./tests/results/aci |& tee test_output.txt
+#  artifacts:
+#    when: always
+#    paths:
+#      - tests/results/aci/*.html
+#      - tests/results/aci/xunit.xml
+#      - test_output.txt
+#    reports:
+#      junit: tests/results/aci/xunit.xml
+#  cache: []
+#  dependencies:
+#    - deploy
+#  needs:
+#    - deploy
+#  only:
+#    - master
 
-# Template for the apic test jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.test_apic: &test_apic
+test-idempotency:
   stage: test
-  before_script:
-    - echo -e "\e[0Ksection_start:`date +%s`:before_script[collapsed=true]\r\e[0KExecuting before_script"
-    - pip install iac-validate iac-test
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script\r\e[0K"
   script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
-    - iac-test --data ./data --data ./defaults --templates ./tests/templates --filters ./tests/filters --output ./tests/results/aci |& tee test_output.txt
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
-  artifacts:
-    paths:
-      - pipeline_failure.txt
-      - test_output.txt
-      - tests/results/aci/log.html
-      - tests/results/aci/report.html
-      - tests/results/aci/output.xml
-    expire_in: 30 min
-    when: always
-
-test apic (master branch):
-  <<: *test_apic
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
+    - terraform init -input=false
+    - terraform plan -input=false -detailed-exitcode
   dependencies:
-    - plan apic (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic (master branch)", "apply apic (master branch)"]
-
-test apic w. bootstrap (master branch):
-  <<: *test_apic
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag" && $BOOTSTRAP == "true"
-  dependencies:
-    - plan apic w. bootstrap (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic w. bootstrap (master branch)", "apply apic w. bootstrap (master branch)"]
-
-# Template for the prepare notify jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.prepare_notify: &prepare_notify
-  stage: notify
-  before_script: []
-  script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
-    - python3 .ci/render-wx.py
-    # Modify notification template to indicate pipeline success or failure
-    # This is done this way, as Gitlab CI do not have a build-in variable for the overall pipeline success
-    - if grep failed pipeline_failure.txt > /dev/null 2>&1; then sed -i 's/{{ build.status }}/failure/g' webex.txt; fi
-    - if [ ! -f pipeline_failure.txt ]; then sed -i 's/{{ build.status }}/success/g' webex.txt; fi
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
-  artifacts:
-    paths:
-      - webex.txt
-    expire_in: 10 min
-    when: always
-  when: always
-
-prepare notification (master branch):
-  <<: *prepare_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
-  dependencies:
-    - validate (master branch)
-    - fmt (master branch)
-    - plan apic (master branch)
-    - apply apic (master branch)
-    - test apic (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic (master branch)", "apply apic (master branch)", "test apic (master branch)"]
-
-prepare notification w. bootstrap (master branch):
-  <<: *prepare_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag" && $BOOTSTRAP == "true"
-  dependencies:
-    - validate (master branch)
-    - fmt (master branch)
-    - plan apic w. bootstrap (master branch)
-    - apply apic w. bootstrap (master branch)
-    - test apic w. bootstrap (master branch)
-  needs: ["validate (master branch)", "fmt (master branch)", "plan apic w. bootstrap (master branch)", "apply apic w. bootstrap (master branch)", "test apic w. bootstrap (master branch)"]
-
-prepare notification (feature branch):
-  <<: *prepare_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH != "master" && ( $CI_PIPELINE_SOURCE != "tag" || $CI_PIPELINE_SOURCE != "merge_request_event")
-  dependencies:
-    - validate (feature branch)
-    - fmt (feature branch)
-  needs: ["validate (feature branch)", "fmt (feature branch)"]
-
-prepare notification (PR):
-  <<: *prepare_notify
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  dependencies:
-    - validate (PR)
-    - fmt (PR)
-    - plan apic (PR)
-  needs: ["validate (PR)", "fmt (PR)", "plan apic (PR)"]
-
-# Template for the webex notify jobs, as multiple jobs are needed due to Gitlab CIs need for identical rules
-.webex_notify: &webex_notify
-  stage: notify
-  image: ciscosso/drone-webex-team:v0.0.1
-  before_script: []
-  variables:
-    PLUGIN_ACCESS_TOKEN: $SPARK_ACCESS_TOKEN
-    PLUGIN_ROOM: 'moskrive ACI Build'
-    DRONE_REPO_OWNER: $CI_PROJECT_NAMESPACE
-    DRONE_REPO_NAME: $CI_PROJECT_NAME
-    DRONE_COMMIT_SHA: $CI_COMMIT_SHA
-    DRONE_COMMIT_BRANCH: $CI_COMMIT_BRANCH
-    DRONE_COMMIT_AUTHOR: $CI_COMMIT_AUTHOR
-    DRONE_COMMIT_AUTHOR_EMAIL: ''
-    DRONE_BUILD_NUMBER: $CI_PIPELINE_ID
-    DRONE_BUILD_STATUS: 'unknown'
-    DRONE_BUILD_LINK: $CI_PIPELINE_URL
-    DRONE_COMMIT_MESSAGE: $CI_COMMIT_MESSAGE
-    DRONE_COMMIT_LINK: $CI_REPOSITORY_URL
-  script:
-    - echo -e "\e[0Ksection_start:`date +%s`:script\r\e[0KExecuting script"
-    - IFS=""
-    - env PLUGIN_BODY=$(cat webex.txt) /bin/drone-spark
-    - echo -e "\e[0Ksection_end:`date +%s`:script\r\e[0K"
-  when: always
-
-webex notification (master branch):
-  <<: *webex_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag"
-  dependencies:
-    - prepare notification (master branch)
-  needs: ["prepare notification (master branch)"]
-
-webex notification w. bootstrap (master branch):
-  <<: *webex_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "tag" && $BOOTSTRAP == "true"
-  dependencies:
-    - prepare notification w. bootstrap (master branch)
-  needs: ["prepare notification w. bootstrap (master branch)"]
-
-webex notification (feature branch):
-  <<: *webex_notify
-  rules:
-    - if: $CI_COMMIT_BRANCH != "master" && ( $CI_PIPELINE_SOURCE != "tag" || $CI_PIPELINE_SOURCE != "merge_request_event")
-  dependencies:
-    - prepare notification (feature branch)
-  needs: ["prepare notification (feature branch)"]
-
-webex notification (PR):
-  <<: *webex_notify
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  dependencies:
-    - prepare notification (PR)
-  needs: ["prepare notification (PR)"]
+    - deploy
+  needs:
+    - deploy
+  only:
+    - master
