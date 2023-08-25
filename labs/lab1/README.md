@@ -505,7 +505,7 @@ resource "iosxe_vlan" "vlan52" {
 }
 ```
 
-paste this config into `main.tf` configuration file (please do not remove any code blocks which were added before in the ``` main.tf ``` file):
+paste this config into `main.tf` configuration file:
 
 ![terraform_17](images/terraform_17.png)
 
@@ -983,7 +983,14 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab1\iosxe-loopback-in
 
 ### 10. Verify Loopback Interfaces:
 
-After the terraform apply command completes, login to both switches (c9k-leaf1 and c9k-leaf2) using Putty and verify that Loopback101 interfaces were created on both devices:
+After the terraform apply command completes, login to both switches (c9k-leaf1 and c9k-leaf2) using Putty and the following details:
+
+| Device Name | Device IP | username / password | 
+| --- | --- | --- |
+| LEAF-1 | 198.18.1.31 | developer/C1sco12345 | 
+| LEAF-2 | 198.18.1.32 | developer/C1sco12345 | 
+
+Verify that Loopback101 interfaces were created on both devices:
 
 ![terraform_23](images/terraform_23.png)
 
