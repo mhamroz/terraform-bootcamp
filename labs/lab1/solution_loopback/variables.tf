@@ -1,6 +1,6 @@
 variable "devices" {
   description = "List of device details"
-  type        = list(object({
+  type = list(object({
     name = string
     url  = string
   }))
@@ -8,7 +8,7 @@ variable "devices" {
 
 variable "credentials" {
   description = "Credentials"
-  type        = object({
+  type = object({
     username = string
     password = string
   })

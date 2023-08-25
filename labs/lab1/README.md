@@ -215,7 +215,7 @@ The lock file includes details such as the provider name and version constraint.
 
 ## 3. How to use IOS-XE Terraform Provider
 
-To learn how to confiugr and interact with Terraform provider, you can use provider documentation on the Terraform Registry.
+To learn how to configure and interact with Terraform provider, you can use provider documentation on the Terraform Registry.
 
 To check documentation for Cisco IOS-XE Terraform Provider open following link in your webbrowser:
 
