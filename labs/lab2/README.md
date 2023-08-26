@@ -673,8 +673,8 @@ Use the following details to log in to the devices:
 ![cml_3](images/cml_3.png)
 
 `Note` ubuntu-2 machine might be misconfigured in this lab and ping might be unsuccessful. To check that open Console for ubuntu-2 machine and execute command: `ip addr show ens3`. If ip address is not matching 10.10.10.11 then change it using the following commands:
-- ` sudo ip addr del 10.10.11.10/24 dev ens3 ` -  release the current IP address assigned to the ens3 interface. Please be aware that the IP address "10.10.11.10/24" provided here is just an example. If you possess a different IP address while checking ``` ip -br a ```, kindly indicate your own.
-- ` sudo ip addr add 10.10.10.11/255.255.255.0 dev ens3 ` - assign the new IP address.
+- ` sudo ip addr del 10.10.11.10/24 dev ens3 ` -  remove the current IP address assigned to the ens3 interface. Please be aware that the IP address "10.10.11.10/24" provided here is just an example. If you possess a different IP address while checking ``` ip -br a ```, kindly indicate your own.
+- ` sudo ip addr add 10.10.10.11/24 dev ens3 ` - assign the new IP address.
 
 <br>
 
