@@ -17,4 +17,3 @@ for i in devices:
        
         net_connect =ConnectHandler(**my_device)
         net_connect.send_config_set([interface, "no ip router isis"])
-
