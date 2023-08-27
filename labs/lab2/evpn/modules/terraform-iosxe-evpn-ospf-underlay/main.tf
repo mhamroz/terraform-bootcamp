@@ -2,7 +2,30 @@ locals {
   all                     = setunion(var.leafs, var.spines)
   leaf_interface_indexes  = { for ls in setproduct(var.leafs, range(length(var.spines))) : "${ls[0]}/${ls[1]}" => ls }
   spine_interface_indexes = { for sl in setproduct(var.spines, range(length(var.leafs))) : "${sl[0]}/${sl[1]}" => sl }
+
 }
+
+#resource "iosxe_system" "system" {
+#  for_each = local.all
+
+#  device = each.value
+#  hostname                 = each.value
+#  ip_routing               = true
+#  ipv6_unicast_routing     = true
+#  multicast_routing_switch = true
+#  mtu                      = 9198
+#}
+
+#resource "iosxe_interface_loopback" "loopback" {
+#  for_each = local.all
+
+#  device            = each.value
+#  name              = var.loopback_id
+#  ipv4_address      = [for l in var.loopbacks : l.ipv4_address if l.device == each.value][0]
+#  ipv4_address_mask = "255.255.255.255"
+
+#depends_on = [iosxe_system.system]
+#}
 
 resource "iosxe_interface_loopback" "pim_loopback" {
   for_each = var.spines
@@ -12,6 +35,8 @@ resource "iosxe_interface_loopback" "pim_loopback" {
   description       = "Anycast RP"
   ipv4_address      = var.anycast_rp_ipv4_address
   ipv4_address_mask = "255.255.255.255"
+
+  #depends_on = [iosxe_system.system]
 }
 
 resource "iosxe_interface_loopback" "vtep_loopback" {
@@ -25,6 +50,19 @@ resource "iosxe_interface_loopback" "vtep_loopback" {
   depends_on = [iosxe_interface_ethernet.ethernet_fabric_interface]
 }
 
+#resource "iosxe_interface_ethernet" "leaf_fabric_interface" {
+#  for_each = local.leaf_interface_indexes
+
+#  device     = each.value[0]
+#  type       = var.fabric_interface_type
+#  name       = "${var.leaf_fabric_interface_prefix}${var.leaf_fabric_interface_offset + each.value[1]}"
+#  shutdown   = false
+#  switchport = false
+#  unnumbered = "Loopback${var.loopback_id}"
+
+#  depends_on = [iosxe_interface_loopback.loopback]
+#}
+
 resource "iosxe_interface_ethernet" "ethernet_fabric_interface" {
   for_each = { for interface in var.ethernets : interface.ipv4_address => interface }
 
@@ -35,6 +73,8 @@ resource "iosxe_interface_ethernet" "ethernet_fabric_interface" {
   switchport        = false
   ipv4_address      = each.value.ipv4_address
   ipv4_address_mask = each.value.ipv4_address_mask
+
+  #depends_on = [iosxe_interface_loopback.loopback]
 }
 
 resource "iosxe_ospf" "ospf" {
@@ -43,6 +83,8 @@ resource "iosxe_ospf" "ospf" {
   device     = each.value
   process_id = 1
   router_id  = [for l in var.loopbacks : l.ipv4_address if l.device == each.value][0]
+
+  #depends_on = [iosxe_system.system]
 }
 
 resource "iosxe_interface_ospf" "leaf_interface_ospf" {
@@ -174,6 +216,8 @@ resource "iosxe_pim" "pim" {
   device      = each.value
   ssm_default = true
   rp_address  = var.anycast_rp_ipv4_address
+
+  #depends_on = [iosxe_system.system]
 }
 
 resource "iosxe_msdp" "msdp" {
@@ -186,4 +230,6 @@ resource "iosxe_msdp" "msdp" {
     addr                    = [for l in var.loopbacks : l.ipv4_address if l.device == spine][0]
     connect_source_loopback = var.loopback_id
   } if spine != each.value]
+
+  #depends_on = [iosxe_interface_loopback.loopback]
 }

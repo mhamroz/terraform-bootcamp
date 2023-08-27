@@ -22,8 +22,6 @@ locals {
 }
 
 provider "iosxe" {
-  username = "developer"
-  password = "C1sco12345"
   devices  = local.devices
 }
 
