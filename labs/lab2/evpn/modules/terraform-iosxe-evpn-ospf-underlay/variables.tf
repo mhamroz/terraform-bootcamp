@@ -140,3 +140,15 @@ variable "anycast_rp_ipv4_address" {
     error_message = "`Allowed formats are: `192.168.1.1`."
   }
 }
+
+variable "ethernets" {
+  description = "List of Ethernet interfaces for overlay"
+  type = list(object({
+    device            = string
+    name              = string
+    ipv4_address      = string
+    ipv4_address_mask = string
+  }))
+  default  = []
+  nullable = false
+}

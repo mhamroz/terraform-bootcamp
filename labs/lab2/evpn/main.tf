@@ -22,7 +22,9 @@ locals {
 }
 
 provider "iosxe" {
-  devices = local.devices
+  username = "developer"
+  password = "C1sco12345"
+  devices  = local.devices
 }
 
 data "utils_yaml_merge" "model" {
@@ -45,6 +47,7 @@ module "iosxe_evpn_ospf_underlay" {
   leaf_fabric_interface_offset  = lookup(local.model.fabric.underlay, "leaf_fabric_interface_offset", null)
   spine_fabric_interface_offset = lookup(local.model.fabric.underlay, "spine_fabric_interface_offset", null)
   anycast_rp_ipv4_address       = lookup(local.model.fabric.underlay, "anycast_rp_ipv4_address", null)
+  ethernets                     = lookup(local.model.fabric.underlay, "ethernets", null)
 }
 
 module "iosxe_evpn_overlay" {
