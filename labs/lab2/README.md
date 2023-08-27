@@ -22,7 +22,7 @@ You can find additional information and the fundamental terminology necessary to
 
 <br>
 
-In this lab we will be using code [terraform-iosxe-evpn-example](https://github.com/netascode/terraform-iosxe-evpn-example) with [IOS-XE Provider](https://registry.terraform.io/providers/netascode/iosxe/latest/docs) and following Terraform modules:
+In this lab we will be using modified code from [terraform-iosxe-evpn-example](https://github.com/netascode/terraform-iosxe-evpn-example) with [IOS-XE Provider](https://registry.terraform.io/providers/netascode/iosxe/latest/docs) and following modified Terraform modules:
 
 - [evpn-ospf-underlay](https://registry.terraform.io/modules/netascode/evpn-ospf-underlay/iosxe/latest)
 - [evpn-overlay](https://registry.terraform.io/modules/netascode/evpn-overlay/iosxe/latest)

@@ -1,6 +1,7 @@
 output "loopback_id" {
   description = "Loopback ID used for OSPF and PIM."
-  value       = length([for lo in iosxe_interface_loopback.loopback : lo.name]) > 0 ? [for lo in iosxe_interface_loopback.loopback : lo.name][0] : null
+  #value       = length([for lo in iosxe_interface_loopback.loopback : lo.name]) > 0 ? [for lo in iosxe_interface_loopback.loopback : lo.name][0] : null
+  value = var.loopback_id
 }
 
 output "pim_loopback_id" {
@@ -15,7 +16,15 @@ output "vtep_loopback_id" {
 
 output "loopbacks" {
   description = "List of loopback interfaces, one per device."
-  value = [for lo in iosxe_interface_loopback.loopback : {
+  value = [for lo in var.loopbacks : {
+    device       = lo.device
+    ipv4_address = lo.ipv4_address
+  }]
+}
+
+output "vtep_loopbacks" {
+  description = "List of vtep loopback interfaces, one per leaf."
+  value = [for lo in iosxe_interface_loopback.vtep_loopback : {
     device       = lo.device
     ipv4_address = lo.ipv4_address
   }]
