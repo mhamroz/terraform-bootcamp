@@ -20,11 +20,3 @@ output "loopbacks" {
     ipv4_address = lo.ipv4_address
   }]
 }
-
-output "vtep_loopbacks" {
-  description = "List of vtep loopback interfaces, one per leaf."
-  value = [for lo in iosxe_interface_loopback.vtep_loopback : {
-    device       = lo.device
-    ipv4_address = lo.ipv4_address
-  }]
-}

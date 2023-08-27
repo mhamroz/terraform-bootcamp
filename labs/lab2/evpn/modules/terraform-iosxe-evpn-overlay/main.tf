@@ -155,38 +155,6 @@ resource "iosxe_vrf" "vrf" {
   }]
 }
 
-resource "iosxe_bgp_address_family_ipv4_vrf" "bgp_af_ipv4_vrf" {
-  for_each = var.leafs
-
-  device  = each.value
-  asn     = iosxe_bgp.bgp[each.value].asn
-  af_name = "unicast"
-  vrfs = [for l3 in var.l3_services : {
-    name                   = l3.name
-    advertise_l2vpn_evpn   = true
-    redistribute_connected = true
-    redistribute_static    = true
-  }]
-
-  depends_on = [iosxe_vrf.vrf]
-}
-
-resource "iosxe_bgp_address_family_ipv6_vrf" "bgp_af_ipv6_vrf" {
-  for_each = var.leafs
-
-  device  = each.value
-  asn     = iosxe_bgp.bgp[each.value].asn
-  af_name = "unicast"
-  vrfs = [for l3 in var.l3_services : {
-    name                   = l3.name
-    advertise_l2vpn_evpn   = true
-    redistribute_connected = true
-    redistribute_static    = true
-  }]
-
-  depends_on = [iosxe_vrf.vrf]
-}
-
 resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
   for_each = local.leaf_l3_services
 

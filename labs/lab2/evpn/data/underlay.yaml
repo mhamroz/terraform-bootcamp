@@ -25,3 +25,21 @@ fabric:
     spine_fabric_interface_offset: 1
 
     anycast_rp_ipv4_address: 100.1.101.1
+
+    ethernets:
+      - device: SPINE-1
+        name: 1/0/1
+        ipv4_address: 100.64.0.1
+        ipv4_address_mask: 255.255.255.252
+      - device: SPINE-1
+        name: 1/0/2
+        ipv4_address: 100.64.0.5
+        ipv4_address_mask: 255.255.255.252
+      - device: LEAF-1
+        name: 1/0/1
+        ipv4_address: 100.64.0.2
+        ipv4_address_mask: 255.255.255.252
+      - device: LEAF-2
+        name: 1/0/1
+        ipv4_address: 100.64.0.6
+        ipv4_address_mask: 255.255.255.252
