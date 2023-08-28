@@ -197,6 +197,8 @@ After you start your gitlab runner you need to register this runner to run jobs 
 
 `gitlab-runner register  --url http://198.18.133.252  --token glrt-ywdjYxddYVTEbR-wGKdb`
 
+`Note` Use token from step 7.
+
 - keep GitLab URL and name for the runner as defaults [] by hittng ENTER
 - choose the shell executor
 
@@ -297,7 +299,7 @@ pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
 
 Install iac-validate python tool:
 
-`pip install iac-validate
+`pip install iac-validate`
 
 ```bash
 root@e0303ca291b2:/# pip install iac-validate
@@ -336,7 +338,7 @@ iac-validate, version 0.2.3
 
 ## 5. Create your first project
 
-To create a new project click <b>Create a project</b>
+To create a new project navigate to `https://198.18.133.252` and click <b>Create a project</b>
 
 ![gitlab_2](images/gitlab_2.png)
 
@@ -397,9 +399,10 @@ and copy following files and folders from `terraform-bootcamp`:
 - labs/lab2/evpn/data 
 - labs/lab2/evpn/modules
 - labs/lab2/evpn/main.tf
+
 - labs/lab3/files/schema.yaml
 - labs/lab3/files/.gitlab-ci.yml
-- labs/lab3/files/rules
+- labs/lab3/files/rules/
 
 
 to `terraform-iac` folder:
@@ -454,7 +457,7 @@ provider "iosxe" {
 keep only `devices = local.devices` under provider.
 
 
-Next, navigate to `terraform-iac` repository on Gitlab and go to `Settings` and select `CI/CD`. We will add some variables to that will be used inside the `.gitlab-ci.yml` file.
+Next, navigate to `terraform-iac` repository on Gitlab and go to `Settings` and select `CI/CD`. We will add IOSXE_PASSWORD and IOSXE_USERNAME variables.
 
 ![gitlab_21](images/gitlab_21.png)
 
@@ -478,6 +481,9 @@ When finished you should see the following secrets added to your repository:
 The `Validate` stage is perform syntactic and semantic validations on your inventory.
 
 Start by enabling the validate stage in the `stages` section of the pipeline definition.
+
+Edit `.gitlab-ci.yml` file 
+
 
 ```yaml
 stages:

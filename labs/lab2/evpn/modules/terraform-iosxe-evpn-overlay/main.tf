@@ -168,7 +168,7 @@ resource "iosxe_vrf" "vrf" {
 #    redistribute_static    = true
 #  }]#
 
- # depends_on = [iosxe_vrf.vrf]
+# depends_on = [iosxe_vrf.vrf]
 #}
 
 #resource "iosxe_bgp_address_family_ipv6_vrf" "bgp_af_ipv6_vrf" {
