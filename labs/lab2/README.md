@@ -79,7 +79,31 @@ After cloning the repository, open the repository folder on your desktop. Right-
 
 <br>
 
-## 2. Inspect yaml files in `data` directory
+## 2. Remove legacy routing configuration from leafs and spine
+
+On GigabitEthernet1/0/1 on leafs and GigabitEthernet1/0/1-2 on spine there is isis routing protcol configure. In our lab we will be using OSPF as underaly routing protocol. If we don't remove isis routing protocol from interfaces terraform destroy will not work properly (isis is not supported by iosxe provider).
+
+To remove isis use following steps:
+
+1. Install netmiko python library by running command `ip install netmiko`:
+
+```ps
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> pip install netmiko
+```
+
+2. Mavigate to scripts folder in labs/lab2/evpn/ and run python script `python remove_isis.py`
+
+```ps
+PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn\scripts> python remove_isis.py
+ISIS protocol removed from 198.18.1.21 - interface GigabitEthernet1/0/1
+ISIS protocol removed from 198.18.1.21 - interface GigabitEthernet1/0/2
+ISIS protocol removed from 198.18.1.31 - interface GigabitEthernet1/0/1
+ISIS protocol removed from 198.18.1.32 - interface GigabitEthernet1/0/1
+```
+
+<br>
+
+## 3. Inspect yaml files in `data` directory
 
 The configuration is derived from a set of yaml files in the data directory. This allows to configure BGP EVPN VXLAN in minutes using an easy to use data model. It takes away the complexity of having to deal with references, dependencies or loops. By completely separating data (defining variables) from logic (infrastructure declaration), it allows the user to focus on describing the intended configuration while using a set of terraform modules.
 
@@ -198,7 +222,7 @@ fabric:
 <br>
 
 
-## 3. Initialize a working directory (terraform init)
+## 4. Initialize a working directory (terraform init)
 
 Run `terraform init` command to prepare working directory:
 
@@ -231,7 +255,7 @@ Initializing provider plugins...
 - Installed netascode/utils v0.2.5 (self-signed, key ID 48630DA58CAFD6C0)
 ```
 
-## 4. Provide credentials
+## 5. Provide credentials
 
 Before provisioning infrastructure, you need to provide Terraform with credentials to access spines and leaves. This can be done either via  environment variables or by updating the provider configuration in main.tf.
 
@@ -256,7 +280,7 @@ Open main.tf file in Visual Studio Code and paste following 2 lines after line 2
 
 <br>
 
-## 5. Create execution plan (terraform plan)
+## 6. Create execution plan (terraform plan)
 
 Run `terraform plan` command to preview changes that Terraform plans to make to your infrastructure.
 
@@ -357,7 +381,7 @@ At this stage no configuration changes will be made to spine and leaf devices, b
 
 <br>
 
-## 6. Apply execution plan (terraform apply)
+## 7. Apply execution plan (terraform apply)
 
 The terraform `apply` command is used to apply changes in the configuration. We will use terraform apply with `plan.tfplan` file saved in previous step by running following command:
 
@@ -522,7 +546,7 @@ You can view content of `terraform.tfstate` file in Visual Studio Code:
 
 <br>
 
-## 7. Verify BGP EVPN VXLAN Configuration
+## 8. Verify BGP EVPN VXLAN Configuration
 
 
 Once the configuration changes have been applied to spine and leafs devices we can verify the EVPN operational status by using Putty to login to devices.
@@ -578,7 +602,7 @@ Use the following details to log in to the devices:
 
 <br>
 
-## 8. Updating existing network configuration state
+## 9. Updating existing network configuration state
 
 Because we've separated data from the Terraform code, making changes to the existing network configuration only requires editing the files in the data folder.
 
@@ -659,7 +683,7 @@ Verify that SVI IP Address for VLAN 10 on both leaf devices changed by running `
 
 <br>
 
-## 9. Remove all network configurations for BGP EVPN VXLAN (terraform destroy)
+## 10. Remove all network configurations for BGP EVPN VXLAN (terraform destroy)
 
 To remove all network configurations for BGP EVPN VXLAN we can simply execute `terraform destroy --parallelism=1` command.
 
