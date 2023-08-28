@@ -91,7 +91,7 @@ To remove isis use following steps:
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn> pip install netmiko
 ```
 
-2. Mavigate to scripts folder in labs/lab2/evpn/ and run python script `python remove_isis.py`
+2. Navigate to scripts folder in labs/lab2/evpn/ and run python script `python remove_isis.py`
 
 ```ps
 PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn\scripts> python remove_isis.py
@@ -121,7 +121,7 @@ Navigate to labs/lab2/evpn folder in terminal by executing command: `cd labs/lab
 
 ![terraform_10](images/terraform_10.png)
 
-and expand same evpn folder on right hand side of Visual Studio Code to open inspect files in Editor:
+and expand same evpn folder on right hand side of Visual Studio Code to inspect files in Editor:
 
 ![terraform_11](images/terraform_11.png)
 
@@ -608,7 +608,7 @@ Because we've separated data from the Terraform code, making changes to the exis
 
 Let's change ipv4 address on SVI for VLAN10 from 10.10.10.1 to 192.168.10.1.
 
-To do this open `overlay.yaml` file in Visual Studio Code and edit line nr 23:
+To do this open `overlay.yaml` file in Visual Studio Code and edit line nr 10:
 
 change: 
 
@@ -885,7 +885,7 @@ PS C:\Users\Administrator\Desktop\terraform-bootcamp\labs\lab2\evpn>
 Confirm that you want to proceed by removing these resources (network configuration), by typing yes
 
 ```
-Destroy complete! Resources: 92 destroyed.
+Destroy complete! Resources: 62 destroyed.
 ```
 
 You’ve now successfully deleted all your BGP EVPN VXLAN network configuration that was deployed with Terraform on your Catalyst 9000 Switches running IOS-XE.
