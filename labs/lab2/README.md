@@ -569,7 +569,7 @@ Use the following details to log in to the devices:
 
 ![terraform_17](images/terraform_17.png)
 
-3. Use `show nve vni` to verify VXLAN VNI status on leaf devices:
+3. Use `show nve peers` to verify NVE peer relationship:
 
 ![terraform_18](images/terraform_18.png)
 

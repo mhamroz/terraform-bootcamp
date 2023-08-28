@@ -334,6 +334,13 @@ root@e0303ca291b2:/# iac-validate --version
 iac-validate, version 0.2.3
 ```
 
+Finally, install pyats using command:
+
+`pip install pyats["full"]`
+
+```bash
+root@48a41e2605e9:/# pip install "pyats[full]"
+```
 <br>
 
 ## 5. Create your first project
@@ -403,6 +410,7 @@ and copy following files and folders from `terraform-bootcamp`:
 - labs/lab3/files/schema.yaml
 - labs/lab3/files/.gitlab-ci.yml
 - labs/lab3/files/rules/
+- labs/lab3/files/tests/
 
 
 to `terraform-iac` folder:
@@ -671,25 +679,22 @@ stages:
 and `test` section:
 
 ```yaml
-#test-pyats:
-#  stage: test
-#  script:
-#   - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -f ./tests/filters -o ./tests/results/aci |& tee test_output.txt
-#  artifacts:
-#    when: always
-#    paths:
-#      - tests/results/aci/*.html
-#      - tests/results/aci/xunit.xml
-#      - test_output.txt
-#    reports:
-#      junit: tests/results/aci/xunit.xml
-#  cache: []
-#  dependencies:
-#    - deploy
-#  needs:
-#    - deploy
-#  only:
-#    - main
+test-pyats:
+  stage: test
+  script:
+    - set -o pipefail && pyats run job ./tests/evpn_pyats/evpn_pyats_job.py --testbed ./tests/testbed.yml |& tee test_output.txt
+  artifacts:
+    when: always
+    paths:
+      - test_output.txt
+  cache: []
+  dependencies:
+    - deploy
+  needs:
+    - deploy
+  only:
+    - main
+
 test-idempotency:
   stage: test
   script:

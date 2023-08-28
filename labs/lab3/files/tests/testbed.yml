@@ -1,5 +1,5 @@
 devices:
-  LEAF-1:
+  c9k-leaf1:
     connections:
       cli:
         ip: 198.18.1.31
@@ -10,7 +10,7 @@ devices:
         username: developer
     os: iosxe
     type: iosxe
-  LEAF-2:
+  c9k-leaf2:
     connections:
       cli:
         ip: 198.18.1.32
@@ -21,7 +21,7 @@ devices:
         username: developer
     os: iosxe
     type: iosxe
-  SPINE-1:
+  c9k-spine:
     connections:
       cli:
         ip: 198.18.1.21
