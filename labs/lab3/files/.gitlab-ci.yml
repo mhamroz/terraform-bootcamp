@@ -81,18 +81,14 @@ cache:
 #  only:
 #    - main
 
-#test-integration:
+#test-pyats:
 #  stage: test
 #  script:
-#   - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -f ./tests/filters -o ./tests/results/aci |& tee test_output.txt
+#    - set -o pipefail && pyats run job ./tests/evpn_pyats/evpn_pyats_job.py --testbed ./tests/testbed.yml |& tee test_output.txt
 #  artifacts:
 #    when: always
 #    paths:
-#      - tests/results/aci/*.html
-#      - tests/results/aci/xunit.xml
 #      - test_output.txt
-#    reports:
-#      junit: tests/results/aci/xunit.xml
 #  cache: []
 #  dependencies:
 #    - deploy
