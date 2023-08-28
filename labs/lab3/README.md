@@ -480,10 +480,7 @@ When finished you should see the following secrets added to your repository:
  
 The `Validate` stage is perform syntactic and semantic validations on your inventory.
 
-Start by enabling the validate stage in the `stages` section of the pipeline definition.
-
-Edit `.gitlab-ci.yml` file 
-
+Start by uncommenting the validate stage in the `stages` section of the pipeline definition in `.gitlab-ci.yml` file:
 
 ```yaml
 stages:
@@ -518,15 +515,34 @@ fmt:
     - validate
 ```
 
+![gitlab_25](images/gitlab_25.png)
+
 Add files to git and push to Gitlab. To do this run following commands:
 
 ```ps
+git config --global user.email "admin@lab"
+git config --global user.name "admin"
 git add .
 git commit -m "added validate stage"
 git push
 ```
 
 Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
+
+Navigate to your project:
+
+`http://198.18.133.252/terraform-iac`
+
+and check pipeline status (red rectangle)
+
+![gitlab_26](images/gitlab_26.png)
+
+![gitlab_27](images/gitlab_27.png)
+
+Green icon indicates that all jobs in pipeline were executed succesfully. Click on green icon to check details:
+
+![gitlab_28](images/gitlab_28.png)
+
 
 <br>
 
@@ -562,18 +578,32 @@ plan:
     - fmt
   only:
     - merge_requests
-    - master
+    - main
 ```
 
 The Terraform plan is exported as files which are saved as artifacts. This plan will be used in the next stage as input into the `terraform apply` command.
 
-With these modifications, go ahead and commit the `.gitlab-ci.yml` file to git, and verify if the corresponding pipeline run was successful.
+With these modifications, go ahead and commit the `.gitlab-ci.yml` file to gitlab, and verify if the corresponding pipeline run was successful.
 
 ```ps
 git add .
-git commit -m "added validate stage"
+git commit -m "added plan stage"
 git push
 ```
+
+Navigate to your project:
+
+`http://198.18.133.252/terraform-iac`
+
+and check new pipeline status again:
+
+![gitlab_29](images/gitlab_29.png)
+
+Terraform plan is saved as artifacts (plan.json, plan.tfplan, plan.txt), you can download it clicking on `plan` job icon and then Download
+
+![gitlab_31](images/gitlab_31.png)
+
+![gitlab_30](images/gitlab_30.png)
 
 <br>
 
@@ -607,16 +637,23 @@ deploy:
   needs:
     - plan
   only:
-    - master
+    - main
 ```
 
 Trigger pipeline by pushing changes to Gitlab:
 ```ps
 git add .
-git commit -m "added validate stage"
+git commit -m "added deploy stage"
 git push
 ```
 
+![gitlab_32](images/gitlab_32.png)
+
+Click deploy job icon and inspec job logs. You should see similar terraform apply output you saw in lab2:
+
+![gitlab_33](images/gitlab_33.png)
+
+You can now check if BGP EVPN VXLAN was deployed following section 8 in lab2 (`8. Verify BGP EVPN VXLAN Configuration`)
 <br>
 
 ## 12. Gitlab CI Pipeline - Test Stage
@@ -652,8 +689,7 @@ and `test` section:
 #  needs:
 #    - deploy
 #  only:
-#    - master
-
+#    - main
 test-idempotency:
   stage: test
   script:
@@ -664,13 +700,13 @@ test-idempotency:
   needs:
     - deploy
   only:
-    - master
+    - main
 ```
 
 Trigger pipeline by pushing changes to Gitlab:
 ```ps
 git add .
-git commit -m "added validate stage"
+git commit -m "added test stage"
 git push
 ```
 
