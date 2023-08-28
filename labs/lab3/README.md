@@ -410,7 +410,7 @@ to `terraform-iac` folder:
 ![gitlab_17](images/gitlab_17.png)
 
 
-`Note` If you didn't work on lab2 make sure to execute script `remove_isis.py` from lab2/evpn/scripts [lab2 - remove_isis.py](../lab2#2-remove-legacy-routing-configuration-from-leafs-and-spine)
+`Note` If you didn't work on lab2 make sure to execute script `remove_isis.py` from lab2/evpn/scripts [lab2 - remove_isis.py](../lab2/README.md#2-remove-legacy-routing-configuration-from-leafs-and-spine)
 
 Next, open the `terraform-iac` repository folder on your desktop. Right-click on the `terraform-iac` folder and select `Open with Code`
 
@@ -653,7 +653,7 @@ Click deploy job icon and inspec job logs. You should see similar terraform appl
 
 ![gitlab_33](images/gitlab_33.png)
 
-You can now check if BGP EVPN VXLAN was deployed following section 8 in lab2 (`8. Verify BGP EVPN VXLAN Configuration`)
+You can now check if BGP EVPN VXLAN was deployed following section 8 in [lab2](../lab2/README.md#8-verify-bgp-evpn-vxlan-configuration)
 <br>
 
 ## 12. Gitlab CI Pipeline - Test Stage
