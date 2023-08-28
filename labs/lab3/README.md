@@ -694,18 +694,6 @@ test-pyats:
     - deploy
   only:
     - main
-
-test-idempotency:
-  stage: test
-  script:
-    - terraform init -input=false
-    - terraform plan -input=false -detailed-exitcode
-  dependencies:
-    - deploy
-  needs:
-    - deploy
-  only:
-    - main
 ```
 
 Trigger pipeline by pushing changes to Gitlab:
@@ -714,6 +702,86 @@ git add .
 git commit -m "added test stage"
 git push
 ```
+
+![gitlab_34](images/gitlab_34.png)
+
+Click test-pyats job icon and inspec job logs. You should see following output:
+
+![gitlab_35](images/gitlab_35.png)
+
+
+There are 3 tests in pyats:
+
+- `ospf_connectivity` - Check if all OSPF neigbhor relationships are in FULL state
+
+- `bgp_connectivity` - Check if BGP neighbors are in Established state
+
+- `nve_peers_connectivity` - Check if NVE peer is in UP state
+
+<br>
+
+## 14. Testing Pipeline Failures 
+
+
+### Break validate stage
+
+Let's break validate stage by modifing underlay.yaml file in data folder:
+
+1. Change device in line nr 7 from LEAF-1 to LEAF-3:
+
+![gitlab_36](images/gitlab_36.png)
+
+and push changes to gitlab:
+
+```ps
+git add .
+git commit -m "validate break" 
+git push
+```
+
+![gitlab_38](images/gitlab_38.png)
+
+Click on validate icon to inspect why validate stage failed:
+
+![gitlab_37](images/gitlab_37.png)
+
+You can see semantic error message for rule [101](./files/rules/101_inventory_references.py):
+
+```sh
+ERROR - Semantic error, rule 101: Verify Inventory references in underlay.yaml (['device LEAF-3 not found in inventory.yaml'])
+```
+
+Let's revert the change, by changing LEAF-3 to LEAF-1 again in underlay.yaml file.
+
+### Break test stage
+
+Let's break test stage by shutting down bgp neighbor on LEAF-1.
+
+1. Connect via SSH to LEAF-1 device (198.18.1.31) and run following command:
+
+```sh
+conf t
+router bgp 65000
+neighbor 100.65.0.1 shutdown
+```
+
+![gitlab_39](images/gitlab_39.png)
+
+In previous section, we modified underlay.yaml file, so we can trigger pipeline by pushing changes to gitlab:
+
+```ps
+git add .
+git commit -m "test break" 
+git push
+```
+
+![gitlab_40](images/gitlab_40.png)
+
+Click on pyats_test icon to inspect why test stage failed:
+
+![gitlab_41](images/gitlab_41.png)
+
+You can see that bgp_connectivity test failed. This is expected behaviour, because we manually shutdown bgp neighbor on LEAF-1.
 
 <br></br>
 
