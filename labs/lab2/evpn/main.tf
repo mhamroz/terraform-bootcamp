@@ -22,7 +22,7 @@ locals {
 }
 
 provider "iosxe" {
-  devices  = local.devices
+  devices = local.devices
 }
 
 data "utils_yaml_merge" "model" {

@@ -72,7 +72,7 @@ A new tab will open, and you should see Windows desktop
 
 On Windows Workstation terraform is already installed. If you need to install fresh installation of Terraform you can follow Instruction from hashicorp.com website: [Install Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 
-To upgrade Terraform to latest version (v1.5.5) open Windows Command prompt and run following command: `choco install terraform --version=1.5.6 --force`
+To upgrade Terraform to latest version (v1.5.6) open Windows Command prompt and run following command: `choco install terraform --version=1.5.6 --force`
 
 
 You will be asked to continue (type "Y") and to run the script (type "Y)

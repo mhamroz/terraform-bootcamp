@@ -61,13 +61,13 @@ plan:
     - fmt
   only:
     - merge_requests
-    - master
+    - main
 
 deploy:
   stage: deploy
   script:
     - terraform init -input=false
-    - terraform apply -input=false -auto-approve plan.tfplan  |& tee deploy_output.txt
+    - terraform apply -input=false -auto-approve --parallelism=1 plan.tfplan  |& tee deploy_output.txt
   artifacts:
     paths:
       - pipeline_failure.txt
@@ -79,7 +79,7 @@ deploy:
   needs:
     - plan
   only:
-    - master
+    - main
 
 #test-integration:
 #  stage: test
@@ -99,7 +99,7 @@ deploy:
 #  needs:
 #    - deploy
 #  only:
-#    - master
+#    - main
 
 test-idempotency:
   stage: test
@@ -111,4 +111,4 @@ test-idempotency:
   needs:
     - deploy
   only:
-    - master
+    - main
