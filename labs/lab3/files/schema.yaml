@@ -29,6 +29,8 @@ underlay:
 
   anycast_rp_ipv4_address: ip(version=4)
 
+  ethernets: list(include('ethernets'), required=False)
+
 devices:
   name: str(min=1, max=64)
   url: regex('^https:\/\/\d+\.\d+\.\d+\.\d+$')
@@ -54,3 +56,9 @@ loopbacks:
 vtep_loopbacks:
   device: str(min=1, max=64)
   ipv4_address: ip(version=4,required=False)
+
+ethernets:
+  device: str(min=1, max=64)
+  ipv4_address: ip(version=4,required=False)
+  ipv4_address_mask: ip(version=4,required=False)
+  name: str(min=1, max=64)

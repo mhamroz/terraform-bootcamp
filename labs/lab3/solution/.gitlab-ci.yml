@@ -1,0 +1,114 @@
+---
+stages:
+  - validate
+  - plan
+  - deploy
+  - test
+
+variables:
+  IOSXE_USERNAME:
+    description: "Cisco IOSXE Username"
+  IOSXE_PASSWORD:
+    description: "Cisco IOSXE Password"
+
+cache:
+  key: terraform_modules_and_lock
+  paths:
+    - .terraform
+    - .terraform.lock.hcl
+
+
+validate:
+  stage: validate
+  script:
+    - iac-validate --schema schema.yaml --rules ./rules/ ./data/ |& tee validate_output.txt
+  artifacts:
+    paths:
+      - validate_output.txt
+    expire_in: 30 min
+    when: always
+
+fmt:
+  stage: validate
+  before_script:
+    - terraform init
+  script:
+    - terraform fmt -check -recursive -diff |& tee fmt_output.txt
+  artifacts:
+    paths:
+      - fmt_output.txt
+    expire_in: 30 min
+    when: always
+  needs:
+    - validate
+
+plan:
+  stage: plan
+  script:
+    - terraform init -input=false
+    - terraform plan -out=plan.tfplan -input=false
+    - terraform show -no-color plan.tfplan > plan.txt
+    - terraform show -json plan.tfplan > plan.json
+  artifacts:
+    paths:
+      - plan.tfplan
+      - plan.txt
+      - plan.json
+    expire_in: 30 min
+    when: always
+  needs:
+    - validate
+    - fmt
+  only:
+    - merge_requests
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - terraform init -input=false
+    - terraform apply -input=false -auto-approve plan.tfplan  |& tee deploy_output.txt
+  artifacts:
+    paths:
+      - pipeline_failure.txt
+      - deploy_output.txt
+    expire_in: 30 min
+    when: always
+  dependencies:
+    - plan
+  needs:
+    - plan
+  only:
+    - master
+
+#test-integration:
+#  stage: test
+#  script:
+#   - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -f ./tests/filters -o ./tests/results/aci |& tee test_output.txt
+#  artifacts:
+#    when: always
+#    paths:
+#      - tests/results/aci/*.html
+#      - tests/results/aci/xunit.xml
+#      - test_output.txt
+#    reports:
+#      junit: tests/results/aci/xunit.xml
+#  cache: []
+#  dependencies:
+#    - deploy
+#  needs:
+#    - deploy
+#  only:
+#    - master
+
+test-idempotency:
+  stage: test
+  script:
+    - terraform init -input=false
+    - terraform plan -input=false -detailed-exitcode
+  dependencies:
+    - deploy
+  needs:
+    - deploy
+  only:
+    - master

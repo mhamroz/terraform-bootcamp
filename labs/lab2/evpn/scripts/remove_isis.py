@@ -13,7 +13,7 @@ for i in devices:
 
     for inter in i["interfaces"]:
         interface = f"interface {inter}"
-        print(f"ISIS protocol removed from {interface}")
+        print(f"ISIS protocol removed from {i['ip']} - {interface}")
        
         net_connect =ConnectHandler(**my_device)
         net_connect.send_config_set([interface, "no ip router isis"])

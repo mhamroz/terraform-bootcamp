@@ -407,6 +407,8 @@ to `terraform-iac` folder:
 ![gitlab_17](images/gitlab_17.png)
 
 
+`Note` If you didn't work on lab2 make sure to execute script `remove_isis.py` from lab2/evpn/scripts [lab2 - remove_isis.py](../lab2#2-remove-legacy-routing-configuration-from-leafs-and-spine)
+
 Next, open the `terraform-iac` repository folder on your desktop. Right-click on the `terraform-iac` folder and select `Open with Code`
 
 ![gitlab_18](images/gitlab_18.png)
@@ -482,15 +484,189 @@ stages:
   - validate
 ```
 
+and `validate` and `fmt` sections:
+
+```yaml
+validate:
+  stage: validate
+  script:
+    - iac-validate --schema schema.yaml --rules ./rules/ ./data/ |& tee validate_output.txt
+  artifacts:
+    paths:
+      - validate_output.txt
+    expire_in: 30 min
+    when: always
+
+fmt:
+  stage: validate
+  before_script:
+    - terraform init
+  script:
+    - terraform fmt -check -recursive -diff |& tee fmt_output.txt
+  artifacts:
+    paths:
+      - fmt_output.txt
+    expire_in: 30 min
+    when: always
+  needs:
+    - validate
+```
+
 Add files to git and push to Gitlab. To do this run following commands:
 
 ```ps
-
+git add .
+git commit -m "added validate stage"
+git push
 ```
 
 Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
 
-test2
+<br>
+
+## 10. Gitlab CI Pipeline - Plan Stage
+
+Next up is the plan stage, similar to validate stage enable plan stage in the `stages` section of the pipeline definition.
+
+```yaml
+stages:
+  - validate
+  - plan
+```
+
+and `plan` section:
+
+```yaml
+plan:
+  stage: plan
+  script:
+    - terraform init -input=false
+    - terraform plan -out=plan.tfplan -input=false
+    - terraform show -no-color plan.tfplan > plan.txt
+    - terraform show -json plan.tfplan > plan.json
+  artifacts:
+    paths:
+      - plan.tfplan
+      - plan.txt
+      - plan.json
+    expire_in: 30 min
+    when: always
+  needs:
+    - validate
+    - fmt
+  only:
+    - merge_requests
+    - master
+```
+
+The Terraform plan is exported as files which are saved as artifacts. This plan will be used in the next stage as input into the `terraform apply` command.
+
+With these modifications, go ahead and commit the `.gitlab-ci.yml` file to git, and verify if the corresponding pipeline run was successful.
+
+```ps
+git add .
+git commit -m "added validate stage"
+git push
+```
+
+<br>
+
+## 11. Gitlab CI Pipeline - Deploy Stage
+
+As with the other stages, start by enabling this stage in the pipeline file.
+
+```yaml
+stages:
+  - validate
+  - plan
+  - deploy
+```
+
+and `deploy` section:
+
+```yaml
+deploy:
+  stage: deploy
+  script:
+    - terraform init -input=false
+    - terraform apply -input=false -auto-approve plan.tfplan  |& tee deploy_output.txt
+  artifacts:
+    paths:
+      - pipeline_failure.txt
+      - deploy_output.txt
+    expire_in: 30 min
+    when: always
+  dependencies:
+    - plan
+  needs:
+    - plan
+  only:
+    - master
+```
+
+Trigger pipeline by pushing changes to Gitlab:
+```ps
+git add .
+git commit -m "added validate stage"
+git push
+```
+
+<br>
+
+## 12. Gitlab CI Pipeline - Test Stage
+
+The test stage is responsible for running pyats tests that performs post-deployment validation. As with the other stages will we start by enabling it in the pipeline.
+
+```yaml
+stages:
+  - validate
+  - plan
+  - deploy
+  - test
+```
+
+and `test` section:
+
+```yaml
+#test-pyats:
+#  stage: test
+#  script:
+#   - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -f ./tests/filters -o ./tests/results/aci |& tee test_output.txt
+#  artifacts:
+#    when: always
+#    paths:
+#      - tests/results/aci/*.html
+#      - tests/results/aci/xunit.xml
+#      - test_output.txt
+#    reports:
+#      junit: tests/results/aci/xunit.xml
+#  cache: []
+#  dependencies:
+#    - deploy
+#  needs:
+#    - deploy
+#  only:
+#    - master
+
+test-idempotency:
+  stage: test
+  script:
+    - terraform init -input=false
+    - terraform plan -input=false -detailed-exitcode
+  dependencies:
+    - deploy
+  needs:
+    - deploy
+  only:
+    - master
+```
+
+Trigger pipeline by pushing changes to Gitlab:
+```ps
+git add .
+git commit -m "added validate stage"
+git push
+```
 
 <br></br>
 
