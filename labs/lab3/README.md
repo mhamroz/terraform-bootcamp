@@ -407,7 +407,7 @@ to `terraform-iac` folder:
 ![gitlab_17](images/gitlab_17.png)
 
 
-`Note` If you didn't work on lab2 make sure to execute script `remove_isis.py` from lab2/evpn/scripts [lab2 - remove_isis.py](../lab2#2-clone-terraform-bootcamp-repository-to-workstation
+`Note` If you didn't work on lab2 make sure to execute script `remove_isis.py` from lab2/evpn/scripts [lab2 - remove_isis.py](../lab2#2-remove-legacy-routing-configuration-from-leafs-and-spine)
 
 Next, open the `terraform-iac` repository folder on your desktop. Right-click on the `terraform-iac` folder and select `Open with Code`
 
