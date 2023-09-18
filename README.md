@@ -29,6 +29,12 @@ Labs can also be done without installing anything on local machine using https:/
 
 <br></br>
 
+## Terraform Cheat Sheet
+
+[Terraform Cheat Sheet](./TerraformCheatSheet.md)
+
+<br></br>
+
 ## Reserve an DCLOUD session:
 
 To reserve an `Cisco Catalyst 9000 IOS XE Programmability & Automation Lab v1`, follow below steps:
