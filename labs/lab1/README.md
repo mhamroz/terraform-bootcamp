@@ -147,7 +147,9 @@ Clone terraform-bootcamp-evpn repository to Desktop by running following command
 
 ![terraform_2](images/terraform_2.png)
 
-You will be asked to Sign in to GitHub. Use `access token` provided during labs
+You will be asked to Sign in to GitHub. Use following `access token`:
+
+```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```
 
 ![terraform_3](images/terraform_3.png)
 
