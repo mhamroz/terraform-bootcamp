@@ -575,7 +575,7 @@ git commit -m "added init stage"
 git push
 ```
 
-Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
+Once you have pushed the file to Gitlab, access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
 
 Navigate to your project:
 
@@ -591,7 +591,7 @@ Green icon indicates that terraform backend was initialized successfully and ter
 
 ## 10. Gitlab CI Pipeline - Validate Stage
  
-The `Validate` stage is perform syntactic and semantic validations on your inventory.
+The `Validate` stage performs syntactic and semantic validations on your inventory.
 
 Start by uncommenting the validate stage in the `stages` section of the pipeline definition in `.gitlab-ci.yml` file:
 
@@ -699,7 +699,7 @@ Navigate to your project:
 
 `http://198.18.133.252/root/terraform-iac`
 
-and check new pipeline status again:
+and check new pipeline status:
 
 ![gitlab_29](images/gitlab_29.png)
 
@@ -750,11 +750,11 @@ git commit -m "added deploy stage"
 git push
 ```
 
-To deploy configuration click on deploy icon:
+To deploy configuration click on "play" button on deploy icon:
 
 ![gitlab_32_1](images/gitlab_32_1.png)
 
-After deploy click deploy icon again and inspec job logs. You should see similar terraform apply output you saw in lab2:
+After deploy click deploy icon and inspec job logs. You should see similar terraform apply output you saw in lab2:
 
 ![gitlab_32](images/gitlab_32.png)
 
@@ -765,7 +765,7 @@ You can now check if BGP EVPN VXLAN was deployed following section 8 in [lab2](.
 
 ## 13. Gitlab CI Pipeline - Test Stage
 
-The test stage is responsible for running pyats tests that performs post-deployment validation. As with the other stages will we start by enabling it in the pipeline.
+The test stage is responsible for running pyats tests that performs post-deployment validation. As with the other stages we will start by enabling it in the pipeline.
 
 ```yaml
 stages:
@@ -853,7 +853,7 @@ You can see semantic error message for rule [101](./files/rules/101_inventory_re
 ERROR - Semantic error, rule 101: Verify Inventory references in underlay.yaml (['device LEAF-3 not found in inventory.yaml'])
 ```
 
-Let's revert the change, by changing LEAF-3 to LEAF-1 again in underlay.yaml file.
+Let's revert the change, by changing LEAF-3 to LEAF-1 again in underlay.yaml file. Don't push the changes.
 
 ### Break test stage
 
