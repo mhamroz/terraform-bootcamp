@@ -29,9 +29,9 @@ Labs can also be done without installing anything on local machine using https:/
 
 <br></br>
 
-## Terraform Cheat Sheet
+## Terraform CLI Cheat Sheet
 
-[Terraform Cheat Sheet](./TerraformCheatSheet.md)
+ - [TerraformCheatSheet](./TerraformCheatSheet.md)
 
 <br></br>
 

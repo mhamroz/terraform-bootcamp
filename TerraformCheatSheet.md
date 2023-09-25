@@ -58,6 +58,22 @@
 
 `terraform output <output_name>` : Displays the value of a specific output variable
 
+## Importing resources:
+
+`terraform import <resource_type>.<resource_name> <external_id>` : Imports an existing resource into Terraform's state
+
+### Config-driven import:
+
+```
+import {
+    to = <resource_name>
+    id = "resource ID"
+}
+```
+
+`terraform plan -generate-config-out=generated_resources.tf` : Terraform will automatically generate the corresponding HCL configuration for any resource included in an import block that doesn’t have an existing configuration associated with it
+
+
 ## Other Useful Commands:
 
 `terraform validate` : Validates the configuration files for syntax and other errors
@@ -68,6 +84,6 @@
 
 `terraform refresh` : Updates the state file with the current real-world resources
 
-`terraform import <resource_type>.<resource_name> <external_id>` : Imports an existing resource into Terraform's state
-
 `terraform version` : Displays the Terraform version
+
+`terraform graph -type=plan | dot -Tpng -o graph.png` : Visualize your execution plan

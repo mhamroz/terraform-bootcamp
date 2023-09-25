@@ -226,7 +226,7 @@ fabric:
 
 Run `terraform init` command to prepare working directory:
 
-![terraform_7](images/terraform_7.png)
+![terraform__7](images/terraform_7.png)
 
 Terraform init command performs following steps:
 

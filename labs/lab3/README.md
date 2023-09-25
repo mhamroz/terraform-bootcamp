@@ -110,9 +110,13 @@ First time you access Gitlab site you will be propmed to setup root password. En
 If you are not asked to set up a root password, follow this workaround:
 
 1. Enter Gitlab-CE container shell: `docker exec -it gitlab-linode /bin/bash`
-2. Run following command to setup new root password (minimum 8 characters): `gitlab-rake "gitlab:password:reset[root]"`
+2. Run following command to setup new root password (minimum 8 characters): 
+```
+gitlab-rake "gitlab:password:reset[root]"
+```
 
-```root@198:/# gitlab-rake "gitlab:password:reset[root]"
+```
+root@198:/# gitlab-rake "gitlab:password:reset[root]"
 Enter password:
 Confirm password:
 Password successfully updated for user with username root.
@@ -138,7 +142,9 @@ GitLab Runner is an open-source application that is used in conjunction with Git
 
 To start gitlab runner container use following command:
 
-```docker run -d --name gitlab-runner --restart always gitlab/gitlab-runner:latest```
+```
+docker run -d --name gitlab-runner --restart always gitlab/gitlab-runner:latest
+```
 
 ```
 C:\Users\Administrator\Desktop>docker run -d --name gitlab-runner --restart always gitlab/gitlab-runner:latest
@@ -381,6 +387,7 @@ and clone terraform-iac empty repo using git clone command:
 
 You wil be asked to enter credentials for your Gitlab instance. Use root as username and password you set up in section (2. Configure and Run Gitlab)
 
+![gitlab_15_1](images/gitlab_15_1.png)
 
 ```
 C:\Users\Administrator\Desktop>git clone http://198.18.133.252/root/terraform-iac.git
@@ -411,6 +418,7 @@ and copy following files and folders from `terraform-bootcamp`:
 - labs/lab3/files/.gitlab-ci.yml
 - labs/lab3/files/rules/
 - labs/lab3/files/tests/
+- labs/lab3/files/init.sh
 
 
 to `terraform-iac` folder:
@@ -474,9 +482,10 @@ Add the following variables:
 - IOSXE_PASSWORD: set this to `C1sco12345`. Click on `Mask variable`.
 - IOSXE_USERNAME: set this to `developer`.
 
+![gitlab_23](images/gitlab_23.png)
+
 ![gitlab_22](images/gitlab_22.png)
 
-![gitlab_23](images/gitlab_23.png)
 
 When finished you should see the following secrets added to your repository:
 
@@ -484,7 +493,103 @@ When finished you should see the following secrets added to your repository:
 
 <br>
 
-## 9. Gitlab CI Pipeline - Validate Stage
+## 9. Gitlab CI Pipeline - Init Stage
+
+The `Init` stage initializes a working directory and downloads the necessary provider plugins and modules and setting up the GitLab server as http backend for storing state file.
+
+To configure Gitlab as backend first create Access Token. Go to terraform-iac project and select `Settings -> Access Tokens`:
+
+![gitlab_24_1](images/gitlab_24_1.png)
+
+Add new token:
+
+```
+Token name: terraform
+Role: Maintainer
+Scope: api
+```
+
+![gitlab_24_2](images/gitlab_24_2.png)
+
+Copy the token and save it in a temp file.
+
+`Note` The token can not be viewed again and you need it later!
+
+![gitlab_24_3](images/gitlab_24_3.png)
+
+Next, create TF_USERNAME and TF_PASSWORD variables in `Settings -> CI/CD -> Variables`:
+
+```
+TF_USERNAME: root
+
+TF_PASSWORD: (use your token that you copied, and select Mask Variable)
+```
+
+![gitlab_24_4](images/gitlab_24_4.png)
+
+![gitlab_24_5](images/gitlab_24_5.png)
+
+File called `init.sh` contains commands to initialize the Terraform environment to use your GitLab server with all the required credentials (user / token).
+
+Before starting pipeline add terraform backend http configuration terraform section in main.tf file:
+
+```hcl
+terraform {
+  backend "http" {
+  }
+}
+```
+
+![gitlab_42](images/gitlab_42.png)
+
+
+Next uncomment the init stage in the `stages` section of the pipeline definition in `.gitlab-ci.yml` file:
+
+```yaml
+stages:
+  - init
+```
+
+and `init` section:
+
+```yaml
+init:
+  stage: init
+  script:
+    - chmod +x init.sh
+    - ./init.sh  |& tee init_output.txt
+  artifacts:
+    paths:
+      - init_output.txt
+    expire_in: 30 min
+    when: always
+```
+
+Add files to git and push to Gitlab. To do this run following commands:
+
+```ps
+git config --global user.email "admin@lab"
+git config --global user.name "admin"
+git add .
+git commit -m "added init stage"
+git push
+```
+
+Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
+
+Navigate to your project:
+
+`http://198.18.133.252/terraform-iac`
+
+and check pipeline status (red rectangle)
+
+![gitlab_27](images/gitlab_27.png)
+
+Green icon indicates that terraform backend was initialized successfully and terraform state is not using Gitlab server.
+
+<br>
+
+## 10. Gitlab CI Pipeline - Validate Stage
  
 The `Validate` stage is perform syntactic and semantic validations on your inventory.
 
@@ -492,6 +597,7 @@ Start by uncommenting the validate stage in the `stages` section of the pipeline
 
 ```yaml
 stages:
+  - init
   - validate
 ```
 
@@ -510,8 +616,6 @@ validate:
 
 fmt:
   stage: validate
-  before_script:
-    - terraform init
   script:
     - terraform fmt -check -recursive -diff |& tee fmt_output.txt
   artifacts:
@@ -523,29 +627,21 @@ fmt:
     - validate
 ```
 
-![gitlab_25](images/gitlab_25.png)
-
-Add files to git and push to Gitlab. To do this run following commands:
+Add files to git and push to Gitlab:
 
 ```ps
-git config --global user.email "admin@lab"
-git config --global user.name "admin"
 git add .
 git commit -m "added validate stage"
 git push
 ```
 
-Once you have pushed the file to Gitlab, then access Gitlab in your browser and navigate to the CI/CD section on the left. Gitlab will automatically trigger a pipeline execution when it notices a .gitlab-ci.yml file. Hence, in Gitlab you should see that a pipeline is being executed.
-
 Navigate to your project:
 
 `http://198.18.133.252/terraform-iac`
 
-and check pipeline status (red rectangle)
+and check pipeline status:
 
 ![gitlab_26](images/gitlab_26.png)
-
-![gitlab_27](images/gitlab_27.png)
 
 Green icon indicates that all jobs in pipeline were executed succesfully. Click on green icon to check details:
 
@@ -554,12 +650,13 @@ Green icon indicates that all jobs in pipeline were executed succesfully. Click 
 
 <br>
 
-## 10. Gitlab CI Pipeline - Plan Stage
+## 11. Gitlab CI Pipeline - Plan Stage
 
 Next up is the plan stage, similar to validate stage enable plan stage in the `stages` section of the pipeline definition.
 
 ```yaml
 stages:
+  - init
   - validate
   - plan
 ```
@@ -570,7 +667,6 @@ and `plan` section:
 plan:
   stage: plan
   script:
-    - terraform init -input=false
     - terraform plan -out=plan.tfplan -input=false
     - terraform show -no-color plan.tfplan > plan.txt
     - terraform show -json plan.tfplan > plan.json
@@ -601,7 +697,7 @@ git push
 
 Navigate to your project:
 
-`http://198.18.133.252/terraform-iac`
+`http://198.18.133.252/root/terraform-iac`
 
 and check new pipeline status again:
 
@@ -615,12 +711,13 @@ Terraform plan is saved as artifacts (plan.json, plan.tfplan, plan.txt), you can
 
 <br>
 
-## 11. Gitlab CI Pipeline - Deploy Stage
+## 12. Gitlab CI Pipeline - Deploy Stage
 
 As with the other stages, start by enabling this stage in the pipeline file.
 
 ```yaml
 stages:
+  - init
   - validate
   - plan
   - deploy
@@ -632,11 +729,9 @@ and `deploy` section:
 deploy:
   stage: deploy
   script:
-    - terraform init -input=false
     - terraform apply -input=false -auto-approve plan.tfplan  |& tee deploy_output.txt
   artifacts:
     paths:
-      - pipeline_failure.txt
       - deploy_output.txt
     expire_in: 30 min
     when: always
@@ -655,21 +750,26 @@ git commit -m "added deploy stage"
 git push
 ```
 
-![gitlab_32](images/gitlab_32.png)
+To deploy configuration click on deploy icon:
 
-Click deploy job icon and inspec job logs. You should see similar terraform apply output you saw in lab2:
+![gitlab_32_1](images/gitlab_32_1.png)
+
+After deploy click deploy icon again and inspec job logs. You should see similar terraform apply output you saw in lab2:
+
+![gitlab_32](images/gitlab_32.png)
 
 ![gitlab_33](images/gitlab_33.png)
 
 You can now check if BGP EVPN VXLAN was deployed following section 8 in [lab2](../lab2/README.md#8-verify-bgp-evpn-vxlan-configuration)
 <br>
 
-## 12. Gitlab CI Pipeline - Test Stage
+## 13. Gitlab CI Pipeline - Test Stage
 
 The test stage is responsible for running pyats tests that performs post-deployment validation. As with the other stages will we start by enabling it in the pipeline.
 
 ```yaml
 stages:
+  - init
   - validate
   - plan
   - deploy
@@ -702,6 +802,8 @@ git add .
 git commit -m "added test stage"
 git push
 ```
+
+Click deploy and wait for test stage to finish:
 
 ![gitlab_34](images/gitlab_34.png)
 
@@ -757,7 +859,7 @@ Let's revert the change, by changing LEAF-3 to LEAF-1 again in underlay.yaml fil
 
 Let's break test stage by shutting down bgp neighbor on LEAF-1.
 
-1. Connect via SSH to LEAF-1 device (198.18.1.31) and run following command:
+1. Connect via SSH to LEAF-1 device (198.18.1.31 - developer/C1sco12345)  and run following command:
 
 ```sh
 conf t
@@ -775,7 +877,9 @@ git commit -m "test break"
 git push
 ```
 
-![gitlab_40](images/gitlab_40.png)
+Click on deploy button:
+
+![gitlab_40_1](images/gitlab_40_1.png)
 
 Click on pyats_test icon to inspect why test stage failed:
 
